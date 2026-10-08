@@ -1,0 +1,13 @@
+# Binarios y ejecutables
+sistema_bicis
+*.o
+*.exe
+build/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+
+# Archivos temporales del sistema
+.DS_Store
