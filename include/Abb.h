@@ -2,22 +2,22 @@
 #define ABB_H_INCLUDED
 #include "NodoAbb.h"
 
-class ABB
+class Abb
 {
 private:
     Nodo *raiz;
 
     void insertar(int valor, Nodo *nodo);
-    int contar_nodos(Nodo *nodo) const;
+    int contarNodos(Nodo *nodo) const;
     int altura(Nodo *nodo) const;
 
 public:
-    ABB();
+    Abb();
 
     void insertar(int valor);
-    int contar_nodos() const;
+    int contarNodos() const;
     int altura() const;
-    void recorrido_inorden(Nodo *raiz);
+    void recorridoInorden(Nodo *raiz);
 };
 
 #endif // ABB_H_INCLUDED

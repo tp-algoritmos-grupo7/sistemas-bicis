@@ -1,13 +1,13 @@
-#include "ABB.h"
+#include "Abb.h"
 #include <iostream>
 #include <stack>
 using namespace std;
-ABB::ABB()
+Abb::Abb()
     : raiz(nullptr)
 {
 }
 // metodo publico para insertar un valor en el árbol
-void ABB::insertar(int valor)
+void Abb::insertar(int valor)
 {
     if (raiz == nullptr)
         raiz = new Nodo(valor);
@@ -16,7 +16,7 @@ void ABB::insertar(int valor)
 }
 
 // metodo privado para insertar un valor en el árbol a partir de un nodo dado
-void ABB::insertar(int valor, Nodo *nodo)
+void Abb::insertar(int valor, Nodo *nodo)
 {
     if (valor < nodo->obtener_dato())
     {
@@ -34,25 +34,25 @@ void ABB::insertar(int valor, Nodo *nodo)
     }
 }
 
-int ABB::contar_nodos() const
+int Abb::contarNodos() const
 {
-    return contar_nodos(raiz);
+    return contarNodos(raiz);
 }
 
-int ABB::contar_nodos(Nodo *nodo) const
+int Abb::contarNodos(Nodo *nodo) const
 {
     if (nodo == nullptr)
         return 0;
 
-    return 1 + contar_nodos(nodo->obtener_izquierdo()) + contar_nodos(nodo->obtener_derecho());
+    return 1 + contarNodos(nodo->obtener_izquierdo()) + contarNodos(nodo->obtener_derecho());
 }
 
-int ABB::altura() const
+int Abb::altura() const
 {
     return altura(raiz);
 }
 
-int ABB::altura(Nodo *nodo) const
+int Abb::altura(Nodo *nodo) const
 {
     if (nodo == nullptr)
         return -1;
@@ -65,13 +65,13 @@ int ABB::altura(Nodo *nodo) const
                     : alturaDerecha);
 }
 // recorrido inorden - primero izq, luego nodo, luego der - recursivo
-void ABB::recorrido_inorden(Nodo *raiz)
+void Abb::recorridoInorden(Nodo *raiz)
 {
 
     if (raiz == nullptr)
         return;
 
-    recorrido_inorden(raiz->obtener_izquierdo());
+    recorridoInorden(raiz->obtener_izquierdo());
     cout << raiz->obtener_dato() << " ";
-    recorrido_inorden(raiz->obtener_derecho());
+    recorridoInorden(raiz->obtener_derecho());
 }
