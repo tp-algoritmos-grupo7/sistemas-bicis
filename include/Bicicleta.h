@@ -1,6 +1,6 @@
 #ifndef BICICLETA_H
 #define BICICLETA_H
-
+#include <string>
 class Bicicleta
 {
 public:
@@ -18,7 +18,7 @@ public:
 
 private:
     int biciId;
-    int codigoEstacion;
+    std::string codigoEstacion;
     Tipo tipoBicicleta;
     Estado estado;
     int kilometros;
@@ -28,13 +28,13 @@ public:
     Bicicleta(int biciId, int codigoEstacion, Tipo tipoBicicleta, Estado estado, int kilometros);
 
     int getBiciId() const;
-    int getCodigoEstacion() const;
+    std::string getCodigoEstacion() const;
     Tipo getTipo() const;
     Estado getEstado() const;
     int getKilometros() const;
 
     void setEstado(Estado estado);
-    void setCodigoEstacion(int codigoEstacion);
+    void setCodigoEstacion(std::string codigoEstacion);
 
     void comenzarViaje();
     void finalizarViaje();

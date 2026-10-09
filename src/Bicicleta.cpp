@@ -1,15 +1,15 @@
 #include "Bicicleta.h"
-
+#include <string>
 Bicicleta::Bicicleta()
     : biciId(0),
-      codigoEstacion(0),
+      codigoEstacion(""),
       tipoBicicleta(Tipo::Mecanica),
       estado(Estado::OK),
       kilometros(0)
 {
 }
 
-Bicicleta::Bicicleta(int biciId, int codigoEstacion, Tipo tipoBicicleta, Estado estado, int kilometros)
+Bicicleta::Bicicleta(int biciId, std::string codigoEstacion, Tipo tipoBicicleta, Estado estado, int kilometros)
     : biciId(biciId),
       codigoEstacion(codigoEstacion),
       tipoBicicleta(tipoBicicleta),
@@ -23,7 +23,7 @@ int Bicicleta::getBiciId() const
     return biciId;
 }
 
-int Bicicleta::getCodigoEstacion() const
+std::string Bicicleta::getCodigoEstacion() const
 {
     return codigoEstacion;
 }
@@ -48,7 +48,7 @@ void Bicicleta::setEstado(Estado estado)
     this->estado = estado;
 }
 
-void Bicicleta::setCodigoEstacion(int codigoEstacion)
+void Bicicleta::setCodigoEstacion(std::string codigoEstacion)
 {
     this->codigoEstacion = codigoEstacion;
 }
