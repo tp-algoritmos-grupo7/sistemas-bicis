@@ -64,27 +64,14 @@ int ABB::altura(Nodo *nodo) const
                     ? alturaIzquierda
                     : alturaDerecha);
 }
-// recorrido inorden - primero izq, luego nodo, luego der - iterativo
+// recorrido inorden - primero izq, luego nodo, luego der - recursivo
 void ABB::recorrido_inorden(Nodo *raiz)
 {
 
-    // pendiente: implmentar TDA Pila
-    stack<Nodo *> pendientes;
-    Nodo *actual = raiz;
+    if (raiz == nullptr)
+        return;
 
-    while (actual != nullptr || !pendientes.empty())
-    {
-        while (actual != nullptr)
-        {
-            pendientes.push(actual);
-            actual = actual->obtener_izquierdo();
-        }
-
-        actual = pendientes.top();
-        pendientes.pop();
-        cout << actual->obtener_dato() << " ";
-        actual = actual->obtener_derecho();
-    }
-
-    cout << endl;
+    recorrido_inorden(raiz->obtener_izquierdo());
+    cout << raiz->obtener_dato() << " ";
+    recorrido_inorden(raiz->obtener_derecho());
 }
