@@ -8,42 +8,42 @@ Nodo::Nodo(int valor)
 {
 }
 
-int Nodo::obtener_dato() const
+int Nodo::obtenerDato() const
 {
     return dato;
 }
 
-Nodo *Nodo::obtener_izquierdo() const
+Nodo *Nodo::obtenerIzquierdo() const
 {
     return izquierdo;
 }
 
-Nodo *Nodo::obtener_derecho() const
+Nodo *Nodo::obtenerDerecho() const
 {
     return derecho;
 }
 
-void Nodo::cambiar_izquierdo(Nodo *nodo)
+void Nodo::cambiarIzquierdo(Nodo *nodo)
 {
     izquierdo = nodo;
 }
 
-void Nodo::cambiar_derecho(Nodo *nodo)
+void Nodo::cambiarDerecho(Nodo *nodo)
 {
     derecho = nodo;
 }
 
-bool Nodo::es_hoja()
+bool Nodo::esHoja()
 {
     return izquierdo == nullptr && derecho == nullptr;
 }
 
-bool Nodo::solo_hijo_izquierdo()
+bool Nodo::soloHijoIzquierdo()
 {
     return izquierdo != nullptr && derecho == nullptr;
 }
 
-bool Nodo::solo_hijo_derecho()
+bool Nodo::soloHijoDerecho()
 {
     return izquierdo == nullptr && derecho != nullptr;
 }
