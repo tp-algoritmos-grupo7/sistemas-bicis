@@ -65,6 +65,29 @@ bool Abb::insertar(const Bicicleta &bicicleta, Nodo *nodo)
         return false;
 }
 
+// metodo publico para buscar una bicicleta por biciId
+// retorna un puntero a la bicicleta guardada en el arbol, o nullptr si no existe.
+// El puntero pertenece al arbol: quien lo recibe no debe liberarlo
+const Bicicleta *Abb::buscar(int biciId) const
+{
+    return buscar(biciId, raiz);
+}
+
+// metodo privado para buscar a partir de un nodo dado. En cada paso descarta
+// el subarbol que no puede contener el biciId
+const Bicicleta *Abb::buscar(int biciId, Nodo *nodo) const
+{
+    if (nodo == nullptr)
+        return nullptr;
+
+    if (biciId < nodo->obtenerDato().getBiciId())
+        return buscar(biciId, nodo->obtenerIzquierdo());
+    else if (biciId > nodo->obtenerDato().getBiciId())
+        return buscar(biciId, nodo->obtenerDerecho());
+    else
+        return &nodo->obtenerDato();
+}
+
 int Abb::contarNodos() const
 {
     return contarNodos(raiz);
