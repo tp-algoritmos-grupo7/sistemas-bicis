@@ -1,6 +1,5 @@
 #include "Abb.h"
 #include <iostream>
-#include <stack>
 using namespace std;
 
 // auxiliares de presentacion, con enlace interno a este archivo
