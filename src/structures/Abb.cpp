@@ -20,6 +20,25 @@ Abb::Abb()
     : raiz(nullptr)
 {
 }
+
+// destructor: libera todos los nodos creados con new
+Abb::~Abb()
+{
+    liberar(raiz);
+    raiz = nullptr;
+}
+
+// recorrido postorden - primero izq, luego der, al final el nodo.
+// El nodo se libera ultimo porque sus punteros a hijos se pierden con el delete
+void Abb::liberar(Nodo *nodo)
+{
+    if (nodo == nullptr)
+        return;
+
+    liberar(nodo->obtenerIzquierdo());
+    liberar(nodo->obtenerDerecho());
+    delete nodo;
+}
 // metodo publico para insertar una bicicleta en el árbol
 bool Abb::insertar(const Bicicleta &bicicleta)
 {
