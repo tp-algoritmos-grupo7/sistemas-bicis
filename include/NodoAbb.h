@@ -1,17 +1,19 @@
 #ifndef NODO_H_INCLUDED
 #define NODO_H_INCLUDED
 
+#include "Bicicleta.h"
+
 class Nodo
 {
 private:
-    int dato;
+    Bicicleta dato;
     Nodo *izquierdo;
     Nodo *derecho;
 
 public:
-    explicit Nodo(int valor);
+    explicit Nodo(const Bicicleta &bicicleta);
 
-    int obtenerDato() const;
+    const Bicicleta &obtenerDato() const;
     Nodo *obtenerIzquierdo() const;
     Nodo *obtenerDerecho() const;
 

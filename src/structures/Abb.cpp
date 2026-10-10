@@ -2,35 +2,51 @@
 #include <iostream>
 #include <stack>
 using namespace std;
+
+// auxiliares de presentacion, con enlace interno a este archivo
+namespace
+{
+    const char *textoTipo(Bicicleta::Tipo tipo)
+    {
+        return tipo == Bicicleta::Tipo::Mecanica ? "Mecanica" : "Electrica";
+    }
+
+    const char *textoEstado(Bicicleta::Estado estado)
+    {
+        return estado == Bicicleta::Estado::OK ? "OK" : "Averiada";
+    }
+}
+
 Abb::Abb()
     : raiz(nullptr)
 {
 }
-// metodo publico para insertar un valor en el árbol
-void Abb::insertar(int valor)
+// metodo publico para insertar una bicicleta en el árbol
+void Abb::insertar(const Bicicleta &bicicleta)
 {
     if (raiz == nullptr)
-        raiz = new Nodo(valor);
+        raiz = new Nodo(bicicleta);
     else
-        insertar(valor, raiz);
+        insertar(bicicleta, raiz);
 }
 
-// metodo privado para insertar un valor en el árbol a partir de un nodo dado
-void Abb::insertar(int valor, Nodo *nodo)
+// metodo privado para insertar una bicicleta en el árbol a partir de un nodo
+// dado. La clave de ordenamiento es el biciId
+void Abb::insertar(const Bicicleta &bicicleta, Nodo *nodo)
 {
-    if (valor < nodo->obtenerDato())
+    if (bicicleta.getBiciId() < nodo->obtenerDato().getBiciId())
     {
         if (nodo->obtenerIzquierdo() == nullptr)
-            nodo->cambiarIzquierdo(new Nodo(valor));
+            nodo->cambiarIzquierdo(new Nodo(bicicleta));
         else
-            insertar(valor, nodo->obtenerIzquierdo());
+            insertar(bicicleta, nodo->obtenerIzquierdo());
     }
-    else if (valor > nodo->obtenerDato())
+    else if (bicicleta.getBiciId() > nodo->obtenerDato().getBiciId())
     {
         if (nodo->obtenerDerecho() == nullptr)
-            nodo->cambiarDerecho(new Nodo(valor));
+            nodo->cambiarDerecho(new Nodo(bicicleta));
         else
-            insertar(valor, nodo->obtenerDerecho());
+            insertar(bicicleta, nodo->obtenerDerecho());
     }
 }
 
@@ -64,14 +80,26 @@ int Abb::altura(Nodo *nodo) const
                     ? alturaIzquierda
                     : alturaDerecha);
 }
+void Abb::recorridoInorden() const
+{
+    recorridoInorden(raiz);
+}
+
 // recorrido inorden - primero izq, luego nodo, luego der - recursivo
-void Abb::recorridoInorden(Nodo *raiz)
+void Abb::recorridoInorden(Nodo *nodo) const
 {
 
-    if (raiz == nullptr)
+    if (nodo == nullptr)
         return;
 
-    recorridoInorden(raiz->obtenerIzquierdo());
-    cout << raiz->obtenerDato() << " ";
-    recorridoInorden(raiz->obtenerDerecho());
+    recorridoInorden(nodo->obtenerIzquierdo());
+
+    const Bicicleta &bicicleta = nodo->obtenerDato();
+    cout << bicicleta.getBiciId() << " "
+         << bicicleta.getCodigoEstacion() << " "
+         << textoTipo(bicicleta.getTipo()) << " "
+         << textoEstado(bicicleta.getEstado()) << " "
+         << bicicleta.getKilometros() << "\n";
+
+    recorridoInorden(nodo->obtenerDerecho());
 }

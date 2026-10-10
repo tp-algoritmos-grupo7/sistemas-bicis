@@ -1,14 +1,14 @@
 #include "NodoAbb.h"
 
-Nodo::Nodo(int valor)
-    : dato(valor),
+Nodo::Nodo(const Bicicleta &bicicleta)
+    : dato(bicicleta),
       izquierdo(nullptr),
       derecho(nullptr)
 
 {
 }
 
-int Nodo::obtenerDato() const
+const Bicicleta &Nodo::obtenerDato() const
 {
     return dato;
 }
