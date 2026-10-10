@@ -13,6 +13,7 @@ private:
     int altura(Nodo *nodo) const;
     void recorridoInorden(Nodo *nodo) const;
     void liberar(Nodo *nodo);
+    int contarBicicletasAveriadas(Nodo *nodo) const;
 
 public:
     Abb();
@@ -28,6 +29,7 @@ public:
     int contarNodos() const;
     int altura() const;
     void recorridoInorden() const;
+    int contarBicicletasAveriadas() const;
 };
 
 #endif // ABB_H_INCLUDED

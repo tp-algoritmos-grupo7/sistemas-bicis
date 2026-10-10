@@ -160,3 +160,23 @@ void Abb::recorridoInorden(Nodo *nodo) const
 
     recorridoInorden(nodo->obtenerDerecho());
 }
+
+int Abb::contarBicicletasAveriadas() const
+{
+    return contarBicicletasAveriadas(raiz);
+}
+
+// metodo privado para contar las bicicletas averiadas en el arbol a partir de un nodo dado
+int Abb::contarBicicletasAveriadas(Nodo *nodo) const
+{
+    if (nodo == nullptr)
+        return 0;
+
+    int actual = (nodo->obtenerDato().getEstado() == Bicicleta::Estado::Averiada)
+                     ? 1
+                     : 0;
+
+    return actual
+           + contarBicicletasAveriadas(nodo->obtenerIzquierdo())
+           + contarBicicletasAveriadas(nodo->obtenerDerecho());
+}
