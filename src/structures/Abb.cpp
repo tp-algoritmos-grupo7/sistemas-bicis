@@ -161,6 +161,7 @@ void Abb::recorridoInorden(Nodo *nodo) const
     recorridoInorden(nodo->obtenerDerecho());
 }
 
+// metodo publico para contar las bicicletas averiadas en el arbol
 int Abb::contarBicicletasAveriadas() const
 {
     return contarBicicletasAveriadas(raiz);

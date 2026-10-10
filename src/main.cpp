@@ -1,7 +1,8 @@
 #include <iostream>
+#include "MenuBicicletas.h"
 
 int main() {
     std::cout << "=== Sistema de Bicicletas Publicas UNAHUR ===" << std::endl;
-    std::cout << "Setup inicial funcionando correctamente." << std::endl;
+    mostrarMenuBicicletas();
     return 0;
 }
