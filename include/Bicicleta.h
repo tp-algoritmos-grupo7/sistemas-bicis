@@ -25,7 +25,7 @@ private:
 
 public:
     Bicicleta();
-    Bicicleta(int biciId, int codigoEstacion, Tipo tipoBicicleta, Estado estado, int kilometros);
+    Bicicleta(int biciId, std::string codigoEstacion, Tipo tipoBicicleta, Estado estado, int kilometros);
 
     int getBiciId() const;
     std::string getCodigoEstacion() const;
