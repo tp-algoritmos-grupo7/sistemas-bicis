@@ -18,19 +18,19 @@ void Abb::insertar(int valor)
 // metodo privado para insertar un valor en el árbol a partir de un nodo dado
 void Abb::insertar(int valor, Nodo *nodo)
 {
-    if (valor < nodo->obtener_dato())
+    if (valor < nodo->obtenerDato())
     {
-        if (nodo->obtener_izquierdo() == nullptr)
-            nodo->cambiar_izquierdo(new Nodo(valor));
+        if (nodo->obtenerIzquierdo() == nullptr)
+            nodo->cambiarIzquierdo(new Nodo(valor));
         else
-            insertar(valor, nodo->obtener_izquierdo());
+            insertar(valor, nodo->obtenerIzquierdo());
     }
-    else if (valor > nodo->obtener_dato())
+    else if (valor > nodo->obtenerDato())
     {
-        if (nodo->obtener_derecho() == nullptr)
-            nodo->cambiar_derecho(new Nodo(valor));
+        if (nodo->obtenerDerecho() == nullptr)
+            nodo->cambiarDerecho(new Nodo(valor));
         else
-            insertar(valor, nodo->obtener_derecho());
+            insertar(valor, nodo->obtenerDerecho());
     }
 }
 
@@ -44,7 +44,7 @@ int Abb::contarNodos(Nodo *nodo) const
     if (nodo == nullptr)
         return 0;
 
-    return 1 + contarNodos(nodo->obtener_izquierdo()) + contarNodos(nodo->obtener_derecho());
+    return 1 + contarNodos(nodo->obtenerIzquierdo()) + contarNodos(nodo->obtenerDerecho());
 }
 
 int Abb::altura() const
@@ -57,8 +57,8 @@ int Abb::altura(Nodo *nodo) const
     if (nodo == nullptr)
         return -1;
 
-    int alturaIzquierda = altura(nodo->obtener_izquierdo());
-    int alturaDerecha = altura(nodo->obtener_derecho());
+    int alturaIzquierda = altura(nodo->obtenerIzquierdo());
+    int alturaDerecha = altura(nodo->obtenerDerecho());
 
     return 1 + (alturaIzquierda > alturaDerecha
                     ? alturaIzquierda
@@ -71,7 +71,7 @@ void Abb::recorridoInorden(Nodo *raiz)
     if (raiz == nullptr)
         return;
 
-    recorridoInorden(raiz->obtener_izquierdo());
-    cout << raiz->obtener_dato() << " ";
-    recorridoInorden(raiz->obtener_derecho());
+    recorridoInorden(raiz->obtenerIzquierdo());
+    cout << raiz->obtenerDato() << " ";
+    recorridoInorden(raiz->obtenerDerecho());
 }
