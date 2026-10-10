@@ -7,7 +7,7 @@ class Abb
 private:
     Nodo *raiz;
 
-    void insertar(const Bicicleta &bicicleta, Nodo *nodo);
+    bool insertar(const Bicicleta &bicicleta, Nodo *nodo);
     int contarNodos(Nodo *nodo) const;
     int altura(Nodo *nodo) const;
     void recorridoInorden(Nodo *nodo) const;
@@ -15,7 +15,7 @@ private:
 public:
     Abb();
 
-    void insertar(const Bicicleta &bicicleta);
+    bool insertar(const Bicicleta &bicicleta);
     int contarNodos() const;
     int altura() const;
     void recorridoInorden() const;

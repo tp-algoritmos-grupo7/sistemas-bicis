@@ -21,32 +21,48 @@ Abb::Abb()
 {
 }
 // metodo publico para insertar una bicicleta en el árbol
-void Abb::insertar(const Bicicleta &bicicleta)
+bool Abb::insertar(const Bicicleta &bicicleta)
 {
     if (raiz == nullptr)
+    {
         raiz = new Nodo(bicicleta);
+        return true;
+    }
     else
-        insertar(bicicleta, raiz);
+        return insertar(bicicleta, raiz);
 }
 
 // metodo privado para insertar una bicicleta en el árbol a partir de un nodo
 // dado. La clave de ordenamiento es el biciId
-void Abb::insertar(const Bicicleta &bicicleta, Nodo *nodo)
+// retorna true si se inserta correctamente, false si ya existe
+bool Abb::insertar(const Bicicleta &bicicleta, Nodo *nodo)
 {
+    // si el biciId es menor, se inserta a la izquierda
     if (bicicleta.getBiciId() < nodo->obtenerDato().getBiciId())
     {
+        // si el nodo izquierdo es nulo, se inserta el nuevo nodo
         if (nodo->obtenerIzquierdo() == nullptr)
+        {
             nodo->cambiarIzquierdo(new Nodo(bicicleta));
+            return true;
+        }
+        // si el nodo izquierdo no es nulo, se inserta el nuevo nodo en el nodo izquierdo
         else
-            insertar(bicicleta, nodo->obtenerIzquierdo());
+            return insertar(bicicleta, nodo->obtenerIzquierdo());
     }
     else if (bicicleta.getBiciId() > nodo->obtenerDato().getBiciId())
     {
         if (nodo->obtenerDerecho() == nullptr)
+        {
             nodo->cambiarDerecho(new Nodo(bicicleta));
+            return true;
+        }
         else
-            insertar(bicicleta, nodo->obtenerDerecho());
+            return insertar(bicicleta, nodo->obtenerDerecho());
     }
+    // si el biciId es igual, se retorna false
+    else
+        return false;
 }
 
 int Abb::contarNodos() const
