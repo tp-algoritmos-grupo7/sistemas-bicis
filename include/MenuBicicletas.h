@@ -8,6 +8,7 @@
 bool leerEnteroValidado(const std::string &mensaje, int &valor);
 
 void agregarBicicletaDesdeConsola(RegistroBicicletas &registro);
+void buscarBicicletaPorId(RegistroBicicletas &registro);
 
 void mostrarMenuBicicletas(RegistroBicicletas &registro);
 

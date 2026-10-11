@@ -7,6 +7,11 @@ bool RegistroBicicletas::agregar(const Bicicleta &bicicleta)
     return bicicletas.insertar(bicicleta);
 }
 
+const Bicicleta *RegistroBicicletas::buscar(int id) const
+{
+    return bicicletas.buscar(id);
+}
+
 void RegistroBicicletas::listarPorId() const
 {
     if (bicicletas.contarNodos() == 0)

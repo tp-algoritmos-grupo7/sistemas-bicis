@@ -92,6 +92,41 @@ void agregarBicicletaDesdeConsola(RegistroBicicletas &registro)
         std::cout << "Ya existe una bicicleta con ese ID.\n";
 }
 
+void buscarBicicletaPorId(RegistroBicicletas &registro)
+{
+    int id;
+    do
+    {
+        if (!leerEnteroValidado("ID a buscar: ", id))
+            return;
+
+        if (id <= 0)
+            std::cout << "El ID debe ser positivo.\n";
+    } while (id <= 0);
+
+    const Bicicleta *bicicleta = registro.buscar(id);
+
+    if (bicicleta == nullptr)
+    {
+        std::cout << "No existe una bicicleta con ese ID.\n";
+        return;
+    }
+
+    std::string tipo = "Mecanica";
+    if (bicicleta->getTipo() == Bicicleta::Tipo::Electrica)
+        tipo = "Electrica";
+
+    std::string estado = "OK";
+    if (bicicleta->getEstado() == Bicicleta::Estado::Averiada)
+        estado = "Averiada";
+
+    std::cout << "ID: " << bicicleta->getBiciId() << '\n'
+              << "Estacion: " << bicicleta->getCodigoEstacion() << '\n'
+              << "Tipo: " << tipo << '\n'
+              << "Estado: " << estado << '\n'
+              << "Kilometros: " << bicicleta->getKilometros() << '\n';
+}
+
 void mostrarMenuBicicletas(RegistroBicicletas &registro)
 {
     int opcion = -1;
@@ -138,7 +173,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             agregarBicicletaDesdeConsola(registro);
             break;
         case 3:
-            std::cout << "buscar bicicleta por id\n";
+            buscarBicicletaPorId(registro);
             break;
         case 4:
             registro.listarPorId();

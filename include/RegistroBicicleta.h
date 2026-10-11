@@ -11,6 +11,8 @@ private:
 
 public:
     bool agregar(const Bicicleta &bicicleta);
+    // Puntero de lectura prestado del ABB; no liberarlo. nullptr si no existe.
+    const Bicicleta *buscar(int id) const;
     void listarPorId() const;
     int contarAveriadas() const;
     int obtenerAltura() const;
