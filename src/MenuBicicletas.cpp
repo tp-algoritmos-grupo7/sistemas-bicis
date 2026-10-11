@@ -147,8 +147,14 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             std::cout << "Bicicletas averiadas: " << registro.contarAveriadas() << '\n';
             break;
         case 6:
-            std::cout << "mostrar altura del ABB\n";
+        {
+            int altura = registro.obtenerAltura();
+            if (altura == -1)
+                std::cout << "El ABB esta vacio (altura: -1).\n";
+            else
+                std::cout << "Altura del ABB (en aristas): " << altura << '\n';
             break;
+        }
         case 7:
             std::cout << "listar bicicletas con mas de X kilometros\n";
             break;
