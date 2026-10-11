@@ -24,6 +24,11 @@ int RegistroBicicletas::contarAveriadas() const
     return bicicletas.contarBicicletasAveriadas();
 }
 
+int RegistroBicicletas::obtenerAltura() const
+{
+    return bicicletas.altura();
+}
+
 bool RegistroBicicletas::cargarDesdeArchivo(const std::string &ruta, std::ostream &diagnosticos)
 {
     std::ifstream archivo(ruta);
@@ -40,7 +45,7 @@ bool RegistroBicicletas::cargarDesdeArchivo(const std::string &ruta, std::ostrea
     int kilometros;
     bool cargaCompleta = true;
 
-    // La consigna permite asumir registros bien formados, sin cabecera.
+    // Se asume que el archivo está bien formado, sin cabecera.
     while (archivo >> id >> codigoEstacion >> textoTipo >> textoEstado >> kilometros)
     {
         Bicicleta::Tipo tipo = textoTipo == "Mecanica"

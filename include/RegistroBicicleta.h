@@ -13,6 +13,7 @@ public:
     bool agregar(const Bicicleta &bicicleta);
     void listarPorId() const;
     int contarAveriadas() const;
+    int obtenerAltura() const;
     // Agrega al registro existente. Omite duplicados y devuelve false si los hubo.
     bool cargarDesdeArchivo(const std::string &ruta, std::ostream &diagnosticos);
 };
