@@ -140,7 +140,6 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
                   << "4. Listar por ID\n"
                   << "5. Contar averiadas\n"
                   << "6. Mostrar altura del ABB\n"
-                  << "7. Listar bicicletas con mas de X kilometros\n"
                   << "0. Salir\n"
                   << "Seleccione una opcion: ";
 
@@ -153,7 +152,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
         std::string sobrante;
         if (!(entrada >> opcion) || (entrada >> sobrante))
         {
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
             opcion = -1;
             continue;
         }
@@ -190,14 +189,11 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
                 std::cout << "Altura del ABB (en aristas): " << altura << '\n';
             break;
         }
-        case 7:
-            std::cout << "listar bicicletas con mas de X kilometros\n";
-            break;
         case 0:
             std::cout << "Saliendo del menu de bicicletas.\n";
             break;
         default:
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
             break;
         }
     } while (opcion != 0);
