@@ -3,6 +3,29 @@
 #include <sstream>
 #include <string>
 
+bool leerEnteroValidado(const std::string &mensaje, int &valor)
+{
+    while (true)
+    {
+        std::cout << mensaje;
+
+        std::string linea;
+        if (!std::getline(std::cin, linea))
+            return false;
+
+        std::istringstream entrada(linea);
+        int numero;
+        std::string sobrante;
+        if ((entrada >> numero) && !(entrada >> sobrante))
+        {
+            valor = numero;
+            return true;
+        }
+
+        std::cout << "Entrada invalida. Ingrese un numero entero.\n";
+    }
+}
+
 void mostrarMenuBicicletas(RegistroBicicletas &registro)
 {
     int opcion = -1;
