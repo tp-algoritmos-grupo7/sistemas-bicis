@@ -19,6 +19,11 @@ void RegistroBicicletas::listarPorId() const
     bicicletas.recorridoInorden();
 }
 
+int RegistroBicicletas::contarAveriadas() const
+{
+    return bicicletas.contarBicicletasAveriadas();
+}
+
 bool RegistroBicicletas::cargarDesdeArchivo(const std::string &ruta, std::ostream &diagnosticos)
 {
     std::ifstream archivo(ruta);
