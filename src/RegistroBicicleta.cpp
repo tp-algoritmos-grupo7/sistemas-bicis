@@ -1,9 +1,22 @@
 #include "RegistroBicicleta.h"
 #include <fstream>
+#include <iostream>
 
 bool RegistroBicicletas::agregar(const Bicicleta &bicicleta)
 {
     return bicicletas.insertar(bicicleta);
+}
+
+void RegistroBicicletas::listarPorId() const
+{
+    if (bicicletas.contarNodos() == 0)
+    {
+        std::cout << "No hay bicicletas registradas.\n";
+        return;
+    }
+
+    std::cout << "ID Estacion Tipo Estado Kilometros\n";
+    bicicletas.recorridoInorden();
 }
 
 bool RegistroBicicletas::cargarDesdeArchivo(const std::string &ruta, std::ostream &diagnosticos)
