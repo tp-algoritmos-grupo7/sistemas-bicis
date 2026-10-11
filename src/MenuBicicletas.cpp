@@ -52,7 +52,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             std::cout << "buscar bicicleta por id\n";
             break;
         case 4:
-            std::cout << "listar bicicletas por id\n";
+            registro.listarPorId();
             break;
         case 5:
             std::cout << "contar bicicletas averiadas\n";
