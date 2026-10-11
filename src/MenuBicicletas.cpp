@@ -26,6 +26,72 @@ bool leerEnteroValidado(const std::string &mensaje, int &valor)
     }
 }
 
+void agregarBicicletaDesdeConsola(RegistroBicicletas &registro)
+{
+    int id;
+    do
+    {
+        if (!leerEnteroValidado("ID: ", id))
+            return;
+        if (id <= 0)
+            std::cout << "El ID debe ser positivo.\n";
+    } while (id <= 0);
+
+    std::string codigoEstacion;
+    bool codigoValido;
+    do
+    {
+        std::cout << "Codigo de estacion: ";
+        if (!std::getline(std::cin, codigoEstacion))
+            return;
+        codigoValido = !codigoEstacion.empty()
+                       && codigoEstacion.find_first_of(" \t\r\n\v\f") == std::string::npos;
+        if (!codigoValido)
+            std::cout << "Ingrese un codigo no vacio y sin espacios.\n";
+    } while (!codigoValido);
+
+    int opcionTipo;
+    do
+    {
+        if (!leerEnteroValidado("Tipo (1. Mecanica / 2. Electrica): ", opcionTipo))
+            return;
+        if (opcionTipo != 1 && opcionTipo != 2)
+            std::cout << "Elija tipo 1 o 2.\n";
+    } while (opcionTipo != 1 && opcionTipo != 2);
+
+    int opcionEstado;
+    do
+    {
+        if (!leerEnteroValidado("Estado (1. OK / 2. Averiada): ", opcionEstado))
+            return;
+        if (opcionEstado != 1 && opcionEstado != 2)
+            std::cout << "Elija estado 1 o 2.\n";
+    } while (opcionEstado != 1 && opcionEstado != 2);
+
+    int kilometros;
+    do
+    {
+        if (!leerEnteroValidado("Kilometros: ", kilometros))
+            return;
+        if (kilometros < 0)
+            std::cout << "Los kilometros no pueden ser negativos.\n";
+    } while (kilometros < 0);
+
+    Bicicleta::Tipo tipo = Bicicleta::Tipo::Mecanica;
+    if (opcionTipo == 2)
+        tipo = Bicicleta::Tipo::Electrica;
+
+    Bicicleta::Estado estado = Bicicleta::Estado::OK;
+    if (opcionEstado == 2)
+        estado = Bicicleta::Estado::Averiada;
+
+    Bicicleta bicicleta(id, codigoEstacion, tipo, estado, kilometros);
+    if (registro.agregar(bicicleta))
+        std::cout << "Bicicleta agregada.\n";
+    else
+        std::cout << "Ya existe una bicicleta con ese ID.\n";
+}
+
 void mostrarMenuBicicletas(RegistroBicicletas &registro)
 {
     int opcion = -1;
