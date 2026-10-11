@@ -135,7 +135,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             break;
         }
         case 2:
-            std::cout << "agregar bicicleta\n";
+            agregarBicicletaDesdeConsola(registro);
             break;
         case 3:
             std::cout << "buscar bicicleta por id\n";
