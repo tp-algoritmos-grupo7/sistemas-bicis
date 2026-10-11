@@ -144,7 +144,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             registro.listarPorId();
             break;
         case 5:
-            std::cout << "contar bicicletas averiadas\n";
+            std::cout << "Bicicletas averiadas: " << registro.contarAveriadas() << '\n';
             break;
         case 6:
             std::cout << "mostrar altura del ABB\n";
