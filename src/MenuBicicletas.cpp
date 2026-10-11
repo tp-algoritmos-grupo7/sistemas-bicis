@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 
-void mostrarMenuBicicletas()
+void mostrarMenuBicicletas(RegistroBicicletas &registro)
 {
     int opcion = -1;
 
@@ -36,8 +36,21 @@ void mostrarMenuBicicletas()
 
         switch (opcion)
         {
-        case 1:    std::cout << "cargar bicicletas desde archivo\n";
-        break;
+        case 1:
+        {
+            std::cout << "Ruta del archivo (Enter para datos/bicicletas.txt): ";
+            std::string ruta;
+            if (!std::getline(std::cin, ruta))
+                return;
+            if (ruta.empty())
+                ruta = "datos/bicicletas.txt";
+
+            if (registro.cargarDesdeArchivo(ruta, std::cout))
+                std::cout << "Carga completada.\n";
+            else
+                std::cout << "Carga con incidencias. Las bicicletas ya incorporadas se conservan.\n";
+            break;
+        }
         case 2:
             std::cout << "agregar bicicleta\n";
             break;

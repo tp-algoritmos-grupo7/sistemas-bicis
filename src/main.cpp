@@ -3,6 +3,7 @@
 
 int main() {
     std::cout << "=== Sistema de Bicicletas Publicas UNAHUR ===" << std::endl;
-    mostrarMenuBicicletas();
+    RegistroBicicletas registro;
+    mostrarMenuBicicletas(registro);
     return 0;
 }

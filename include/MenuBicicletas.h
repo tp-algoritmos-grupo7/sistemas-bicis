@@ -1,6 +1,8 @@
 #ifndef MENU_BICICLETAS_H
 #define MENU_BICICLETAS_H
 
-void mostrarMenuBicicletas();
+#include "RegistroBicicleta.h"
+
+void mostrarMenuBicicletas(RegistroBicicletas &registro);
 
 #endif // MENU_BICICLETAS_H
