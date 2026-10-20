@@ -1,82 +1,48 @@
 #include <iostream>
-#include <fstream>
-#include <string>
-#include "Estacion.hpp"
-#include "Lista.hpp"
-
-// Carga las estaciones desde el archivo e inserta en la lista enlazada
-bool cargarEstaciones(const std::string& rutaArchivo, Lista<Estacion>& lista) {
-    std::ifstream archivo(rutaArchivo);
-    if (!archivo.is_open()) {
-        std::cerr << "Error: no se pudo abrir " << rutaArchivo << std::endl;
-        return false;
-    }
-
-    std::string codigo, nombre, barrio;
-    int capacidad, disponibles;
-
-    while (archivo >> codigo >> nombre >> barrio >> capacidad >> disponibles) {
-        Estacion e(codigo, nombre, barrio, capacidad, disponibles);
-        lista.insertarAlFinal(e);
-    }
-
-    archivo.close();
-    return true;
-}
-
-// Busca una estacion por su codigo 
-// Retorna un puntero a la Estacion encontrada o nullptr si no existe.
-Estacion* buscarEstacionPorCodigo(Lista<Estacion>& lista, const std::string& codigo) {
-    auto it = lista.obtenerIterador();
-    while (it.tieneSiguiente()) {
-        if (it.obtenerDato().obtenerCodigo() == codigo) {
-            return &(it.obtenerDato());
-        }
-        it.avanzar();
-    }
-    return nullptr;
-}
-
-// Muestra la informacion de una estacion dado su codigo
-void mostrarEstacionPorCodigo(Lista<Estacion>& lista, const std::string& codigo) {
-    Estacion* estacion = buscarEstacionPorCodigo(lista, codigo);
-    if (estacion != nullptr) {
-        std::cout << "\n[Estacion Encontrada]" << std::endl;
-        estacion->mostrar();
-    } else {
-        std::cout << "\nError: No se encontro ninguna estacion con el codigo '" << codigo << "'." << std::endl;
-    }
-}
+#include "TablaHash.hpp"
+#include "GestionEstaciones.hpp"
 
 int main() {
-    std::cout << "=== Sistema de Bicicletas Publicas UNAHUR ===" << std::endl;
-    std::cout << "--- Carga de estaciones ---\n" << std::endl;
+    TablaHash tablaEstaciones(31);
 
-    Lista<Estacion> estaciones;
-
-    if (!cargarEstaciones("datos/estaciones.txt", estaciones)) {
-        return 1;
+    if (!cargarEstaciones("datos/estaciones.txt", tablaEstaciones)) {
+        std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
     }
 
-    // Mostrar todas las estaciones cargadas usando el iterador del TDA
-    auto it = estaciones.obtenerIterador();
-    while (it.tieneSiguiente()) {
-        it.obtenerDato().mostrar();
-        it.avanzar();
+    int opcion = -1;
+    while (opcion != 0) {
+        std::cout << "\n============================================\n";
+        std::cout << "  SISTEMA DE BICICLETAS PUBLICAS (UNAHUR)\n";
+        std::cout << "============================================\n";
+        std::cout << "1. Gestion de Estaciones (Parte A)\n";
+        std::cout << "2. Viajes y Colas de Espera (Parte B)\n";
+        std::cout << "3. Registro de Bicicletas con ABB (Parte C)\n";
+        std::cout << "4. Redistribucion con Backtracking (Parte D)\n";
+        std::cout << "0. Salir\n";
+        std::cout << "Seleccione una opcion: ";
+        std::cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                ejecutarMenuEstaciones(tablaEstaciones);
+                break;
+            case 2:
+                std::cout << "\n[Aviso: Parte B en desarrollo]\n";
+                break;
+            case 3:
+                std::cout << "\n[Aviso: Parte C en desarrollo]\n";
+                break;
+            case 4:
+                std::cout << "\n[Aviso: Parte D en desarrollo]\n";
+                break;
+            case 0:
+                std::cout << "\nGracias por usar el Sistema de Bicicletas Publicas. Hasta luego!\n";
+                break;
+            default:
+                std::cout << "\nOpcion invalida. Ingrese una opcion entre 0 y 4.\n";
+                break;
+        }
     }
 
-    std::cout << "\nTotal cargadas en la lista: " << estaciones.obtenerTamanio() << std::endl;
-
-    // Item: Mostrar la informacion de una estacion dado su codigo
-    std::cout << "\n--- Consulta de Estacion por Codigo ---" << std::endl;
-    std::cout << "Ingrese el codigo de la estacion a consultar (o 'FIN' para salir): ";
-    
-    std::string codigoBuscado;
-    while (std::cin >> codigoBuscado && codigoBuscado != "FIN" && codigoBuscado != "fin") {
-        mostrarEstacionPorCodigo(estaciones, codigoBuscado);
-        std::cout << "\nIngrese otro codigo (o 'FIN' para salir): ";
-    }
-
-    std::cout << "\nPrograma finalizado." << std::endl;
     return 0;
 }
