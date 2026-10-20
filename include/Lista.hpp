@@ -75,6 +75,45 @@ public:
         return tamanio;
     }
 
+    bool eliminar(const T& dato) {
+        if (estaVacia()) {
+            return false;
+        }
+
+        if (cabeza->dato == dato) {
+            Nodo* aBorrar = cabeza;
+            cabeza = cabeza->siguiente;
+            if (cabeza == nullptr) {
+                cola = nullptr;
+            }
+            delete aBorrar;
+            tamanio--;
+            return true;
+        }
+
+        Nodo* actual = cabeza;
+        while (actual->siguiente != nullptr && actual->siguiente->dato != dato) {
+            actual = actual->siguiente;
+        }
+
+        if (actual->siguiente != nullptr) {
+            Nodo* aBorrar = actual->siguiente;
+            actual->siguiente = aBorrar->siguiente;
+            if (aBorrar == cola) {
+                cola = actual;
+            }
+            delete aBorrar;
+            tamanio--;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool eliminarElemento(const T& dato) {
+        return eliminar(dato);
+    }
+
     void vaciar() {
         while (!estaVacia()) {
             eliminarDelInicio();
@@ -112,6 +151,15 @@ public:
             if (actual != nullptr) {
                 actual = actual->siguiente;
             }
+        }
+
+        T& siguiente() {
+            if (actual == nullptr) {
+                throw std::runtime_error("Error: no hay mas elementos en el iterador.");
+            }
+            T& dato = actual->dato;
+            actual = actual->siguiente;
+            return dato;
         }
     };
 
