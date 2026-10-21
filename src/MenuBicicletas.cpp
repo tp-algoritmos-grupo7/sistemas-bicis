@@ -140,7 +140,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
                   << "4. Listar por ID\n"
                   << "5. Contar averiadas\n"
                   << "6. Mostrar altura del ABB\n"
-                  << "0. Salir\n"
+                  << "0. Volver al menu principal\n"
                   << "Seleccione una opcion: ";
 
         std::string linea;
@@ -190,7 +190,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             break;
         }
         case 0:
-            std::cout << "Saliendo del menu de bicicletas.\n";
+            std::cout << "Volviendo al menu principal...\n";
             break;
         default:
             std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";

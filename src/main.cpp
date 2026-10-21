@@ -1,9 +1,12 @@
 #include <iostream>
+#include <limits>
 #include "TablaHash.hpp"
 #include "GestionEstaciones.hpp"
+#include "MenuBicicletas.h"
 
 int main() {
     TablaHash tablaEstaciones(31);
+    RegistroBicicletas registroBicicletas;
 
     if (!cargarEstaciones("datos/estaciones.txt", tablaEstaciones)) {
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
@@ -19,18 +22,21 @@ int main() {
         std::cout << "3. Registro de Bicicletas con ABB (Parte C)\n";
         std::cout << "4. Redistribucion con Backtracking (Parte D)\n";
         std::cout << "0. Salir\n";
-        std::cout << "Seleccione una opcion: ";
-        std::cin >> opcion;
+        if (!leerEnteroValidado("Seleccione una opcion: ", opcion)) {
+            break;
+        }
 
         switch (opcion) {
             case 1:
                 ejecutarMenuEstaciones(tablaEstaciones);
+                // El menu de estaciones deja pendiente el salto de linea.
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 break;
             case 2:
                 std::cout << "\n[Aviso: Parte B en desarrollo]\n";
                 break;
             case 3:
-                std::cout << "\n[Aviso: Parte C en desarrollo]\n";
+                mostrarMenuBicicletas(registroBicicletas);
                 break;
             case 4:
                 std::cout << "\n[Aviso: Parte D en desarrollo]\n";
