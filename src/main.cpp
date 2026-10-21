@@ -1,12 +1,18 @@
 #include <iostream>
 #include "TablaHash.hpp"
 #include "GestionEstaciones.hpp"
+#include "GestionViajes.hpp"
 
 int main() {
     TablaHash tablaEstaciones(31);
 
     if (!cargarEstaciones("datos/estaciones.txt", tablaEstaciones)) {
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
+    }
+
+    Lista<Viaje> listaViajes;
+    if (!cargarViajes("datos/viajes.txt", listaViajes)) {
+    std::cerr << "Advertencia: no se pudo cargar el archivo de viajes.\n";
     }
 
     int opcion = -1;
@@ -27,7 +33,7 @@ int main() {
                 ejecutarMenuEstaciones(tablaEstaciones);
                 break;
             case 2:
-                std::cout << "\n[Aviso: Parte B en desarrollo]\n";
+                ejecutarMenuViajes(listaViajes);
                 break;
             case 3:
                 std::cout << "\n[Aviso: Parte C en desarrollo]\n";
