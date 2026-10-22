@@ -3,17 +3,21 @@
 #include "TablaHash.hpp"
 #include "GestionEstaciones.hpp"
 #include "MenuBicicletas.h"
+#include "Redistribucion.hpp"
 
-int main() {
+int main()
+{
     TablaHash tablaEstaciones(31);
     RegistroBicicletas registroBicicletas;
 
-    if (!cargarEstaciones("datos/estaciones.txt", tablaEstaciones)) {
+    if (!cargarEstaciones("datos/estaciones.txt", tablaEstaciones))
+    {
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
     }
 
     int opcion = -1;
-    while (opcion != 0) {
+    while (opcion != 0)
+    {
         std::cout << "\n============================================\n";
         std::cout << "  SISTEMA DE BICICLETAS PUBLICAS (UNAHUR)\n";
         std::cout << "============================================\n";
@@ -22,31 +26,33 @@ int main() {
         std::cout << "3. Registro de Bicicletas con ABB (Parte C)\n";
         std::cout << "4. Redistribucion con Backtracking (Parte D)\n";
         std::cout << "0. Salir\n";
-        if (!leerEnteroValidado("Seleccione una opcion: ", opcion)) {
+        if (!leerEnteroValidado("Seleccione una opcion: ", opcion))
+        {
             break;
         }
 
-        switch (opcion) {
-            case 1:
-                ejecutarMenuEstaciones(tablaEstaciones);
-                // El menu de estaciones deja pendiente el salto de linea.
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                break;
-            case 2:
-                std::cout << "\n[Aviso: Parte B en desarrollo]\n";
-                break;
-            case 3:
-                mostrarMenuBicicletas(registroBicicletas);
-                break;
-            case 4:
-                std::cout << "\n[Aviso: Parte D en desarrollo]\n";
-                break;
-            case 0:
-                std::cout << "\nGracias por usar el Sistema de Bicicletas Publicas. Hasta luego!\n";
-                break;
-            default:
-                std::cout << "\nOpcion invalida. Ingrese una opcion entre 0 y 4.\n";
-                break;
+        switch (opcion)
+        {
+        case 1:
+            ejecutarMenuEstaciones(tablaEstaciones);
+            // El menu de estaciones deja pendiente el salto de linea.
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            break;
+        case 2:
+            std::cout << "\n[Aviso: Parte B en desarrollo]\n";
+            break;
+        case 3:
+            mostrarMenuBicicletas(registroBicicletas);
+            break;
+        case 4:
+            mostrarMenuRedistribucion();
+            break;
+        case 0:
+            std::cout << "\nGracias por usar el Sistema de Bicicletas Publicas. Hasta luego!\n";
+            break;
+        default:
+            std::cout << "\nOpcion invalida. Ingrese una opcion entre 0 y 4.\n";
+            break;
         }
     }
 
