@@ -15,6 +15,13 @@ int main()
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
     }
 
+    // El grafo se arma con las estaciones ya cargadas y despues se le agregan las ciclovias
+    GrafoCiclovias grafoCiclovias(tablaEstaciones);
+    if (!grafoCiclovias.cargarDesdeArchivo("datos/ciclovias.txt"))
+    {
+        std::cerr << "Advertencia: no se pudo cargar el archivo de ciclovias.\n";
+    }
+
     int opcion = -1;
     while (opcion != 0)
     {
@@ -34,7 +41,7 @@ int main()
         switch (opcion)
         {
         case 1:
-            ejecutarMenuEstaciones(tablaEstaciones);
+            ejecutarMenuEstaciones(tablaEstaciones, grafoCiclovias);
             // El menu de estaciones deja pendiente el salto de linea.
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
