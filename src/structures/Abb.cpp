@@ -204,3 +204,108 @@ int Abb::contarBicicletasAveriadas(Nodo *nodo) const
            + contarBicicletasAveriadas(nodo->obtenerIzquierdo())
            + contarBicicletasAveriadas(nodo->obtenerDerecho());
 }
+
+bool Abb::eliminar(int biciId)
+{
+    Nodo* padre = buscarPadre(biciId);
+    Nodo* nodoAEliminar = nullptr;
+
+    if (padre != nullptr)
+    {
+        if (biciId < padre->obtenerDato().getBiciId())
+            nodoAEliminar = padre->obtenerIzquierdo();
+        else
+            nodoAEliminar = padre->obtenerDerecho();
+    }
+    else if (raiz != nullptr &&
+             raiz->obtenerDato().getBiciId() == biciId)
+    {
+        nodoAEliminar = raiz;
+    }
+
+    if (nodoAEliminar == nullptr)
+        return false;
+
+    if (nodoAEliminar->esHoja())
+        eliminarCasoHoja(nodoAEliminar, padre);
+    else if (nodoAEliminar->soloHijoIzquierdo() ||
+             nodoAEliminar->soloHijoDerecho())
+        eliminarCasoUnHijo(nodoAEliminar, padre);
+    else
+        eliminarCasoDosHijos(nodoAEliminar, padre);
+
+    return true;
+
+}
+
+void Abb::eliminarCasoHoja(Nodo *nodoAEliminar, Nodo *padre)
+{
+    if (nodoAEliminar == raiz)
+        raiz = nullptr;
+    else if (padre->obtenerIzquierdo() == nodoAEliminar)
+        padre->cambiarIzquierdo(nullptr);
+    else
+        padre->cambiarDerecho(nullptr);
+    delete nodoAEliminar;
+}
+
+void Abb::eliminarCasoUnHijo(Nodo *nodoAEliminar, Nodo *padre)
+{
+    Nodo *aux = nodoAEliminar;
+    Nodo *hijo;
+
+    // Obtener el unico hijo no nulo.
+    if (aux->obtenerIzquierdo() != nullptr)
+        hijo = aux->obtenerIzquierdo();
+    else
+        hijo = aux->obtenerDerecho();
+
+    // El hijo ocupa el lugar de aux en el enlace del padre o en la raiz.
+    if (aux == raiz)
+        raiz = hijo;
+    else if (padre->obtenerIzquierdo() == aux)
+        padre->cambiarIzquierdo(hijo);
+    else
+        padre->cambiarDerecho(hijo);
+
+    delete aux;
+}
+
+// Se llama para un nodo con dos hijos: su subarbol derecho existe.
+Nodo *Abb::pPadreMenorMayores(Nodo *nodo) const
+{
+    Nodo *padre = nodo;
+    Nodo *actual = nodo->obtenerDerecho();
+
+    while (actual->obtenerIzquierdo() != nullptr)
+    {
+        padre = actual;
+        actual = actual->obtenerIzquierdo();
+    }
+
+    return padre;
+}
+
+void Abb::eliminarCasoDosHijos(Nodo *nodoAEliminar, Nodo * /*padre*/)
+{
+    Nodo *aux = nodoAEliminar;
+    Nodo *aux2 = pPadreMenorMayores(aux);
+    Nodo *menorMayores;
+
+    // Puede ser el hijo derecho inmediato o uno mas a la izquierda.
+    if (aux2 == aux)
+        menorMayores = aux->obtenerDerecho();
+    else
+        menorMayores = aux2->obtenerIzquierdo();
+
+    // Copiar toda la bicicleta para mantener los datos asociados al ID.
+    aux->cambiarDato(menorMayores->obtenerDato());
+
+    // El sucesor no tiene hijo izquierdo: es hoja o tiene un hijo derecho.
+    if (menorMayores->esHoja())
+        eliminarCasoHoja(menorMayores, aux2);
+    else
+        eliminarCasoUnHijo(menorMayores, aux2);
+
+    // aux permanece en el arbol; el caso anterior ya elimino el sucesor.
+}

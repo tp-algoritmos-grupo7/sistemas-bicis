@@ -11,6 +11,10 @@ private:
     const Bicicleta *buscar(int biciId, Nodo *nodo) const;
     // Devuelve nullptr si el ID no existe o corresponde a la raiz.
     Nodo *buscarPadre(int biciId) const;
+    void eliminarCasoHoja(Nodo *nodoAEliminar, Nodo *padre);
+    void eliminarCasoUnHijo(Nodo *nodoAEliminar, Nodo *padre);
+    void eliminarCasoDosHijos(Nodo *nodoAEliminar, Nodo *padre);
+    Nodo *pPadreMenorMayores(Nodo *nodo) const;
     int contarNodos(Nodo *nodo) const;
     int altura(Nodo *nodo) const;
     void recorridoInorden(Nodo *nodo) const;
@@ -33,6 +37,7 @@ public:
     int altura() const;
     void recorridoInorden() const;
     int contarBicicletasAveriadas() const;
+    bool eliminar(int biciId);
 };
 
 #endif // ABB_H_INCLUDED
