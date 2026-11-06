@@ -42,7 +42,7 @@ int main()
             std::cout << "\n[Aviso: Parte B en desarrollo]\n";
             break;
         case 3:
-            mostrarMenuBicicletas(registroBicicletas);
+            mostrarMenuBicicletas(registroBicicletas, tablaEstaciones);
             break;
         case 4:
             mostrarMenuRedistribucion();

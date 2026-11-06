@@ -21,6 +21,7 @@ public:
 
     // el arbol es duenio de sus nodos: una copia compartiria los mismos
     // punteros y ambos destructores liberarian los mismos nodos
+    // Se prohibe copiar el abb abb1 = abb2 o Abb(abb1)
     Abb(const Abb &otro) = delete;
     Abb &operator=(const Abb &otro) = delete;
 

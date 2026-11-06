@@ -26,7 +26,7 @@ bool leerEnteroValidado(const std::string &mensaje, int &valor)
     }
 }
 
-void agregarBicicletaDesdeConsola(RegistroBicicletas &registro)
+void agregarBicicletaDesdeConsola(RegistroBicicletas &registro, const TablaHash &estaciones)
 {
     int id;
     do
@@ -48,6 +48,11 @@ void agregarBicicletaDesdeConsola(RegistroBicicletas &registro)
                        && codigoEstacion.find_first_of(" \t\r\n\v\f") == std::string::npos;
         if (!codigoValido)
             std::cout << "Ingrese un codigo no vacio y sin espacios.\n";
+        else if (estaciones.buscar(codigoEstacion) == nullptr)
+        {
+            std::cout << "No existe una estacion con ese codigo.\n";
+            codigoValido = false;
+        }
     } while (!codigoValido);
 
     int opcionTipo;
@@ -127,7 +132,7 @@ void buscarBicicletaPorId(RegistroBicicletas &registro)
               << "Kilometros: " << bicicleta->getKilometros() << '\n';
 }
 
-void mostrarMenuBicicletas(RegistroBicicletas &registro)
+void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaciones)
 {
     int opcion = -1;
 
@@ -169,7 +174,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             break;
         }
         case 2:
-            agregarBicicletaDesdeConsola(registro);
+            agregarBicicletaDesdeConsola(registro, estaciones);
             break;
         case 3:
             buscarBicicletaPorId(registro);

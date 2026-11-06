@@ -12,7 +12,6 @@ private:
 
 public:
     explicit Nodo(const Bicicleta &bicicleta);
-
     const Bicicleta &obtenerDato() const;
     Nodo *obtenerIzquierdo() const;
     Nodo *obtenerDerecho() const;
