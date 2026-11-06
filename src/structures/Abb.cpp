@@ -112,18 +112,21 @@ Nodo *Abb::buscarPadre(int biciId) const
     Nodo *padre = nullptr;
     Nodo *actual = raiz;
 
+    // Mientras el nodo actual no sea nulo, se busca el padre del nodo actual
     while (actual != nullptr)
     {
         if (actual->obtenerDato().getBiciId() == biciId)
             return padre;
 
         padre = actual;
+        // Si el biciId es menor, se busca en el subarbol izquierdo
         if (biciId < actual->obtenerDato().getBiciId())
             actual = actual->obtenerIzquierdo();
+        // Si el biciId es mayor, se busca en el subarbol derecho
         else
             actual = actual->obtenerDerecho();
     }
-
+    // Si el nodo actual es nulo, se retorna nullptr
     return nullptr;
 }
 
