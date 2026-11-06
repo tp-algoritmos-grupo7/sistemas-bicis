@@ -107,6 +107,26 @@ const Bicicleta *Abb::buscar(int biciId, Nodo *nodo) const
         return &nodo->obtenerDato();
 }
 
+Nodo *Abb::buscarPadre(int biciId) const
+{
+    Nodo *padre = nullptr;
+    Nodo *actual = raiz;
+
+    while (actual != nullptr)
+    {
+        if (actual->obtenerDato().getBiciId() == biciId)
+            return padre;
+
+        padre = actual;
+        if (biciId < actual->obtenerDato().getBiciId())
+            actual = actual->obtenerIzquierdo();
+        else
+            actual = actual->obtenerDerecho();
+    }
+
+    return nullptr;
+}
+
 int Abb::contarNodos() const
 {
     return contarNodos(raiz);
