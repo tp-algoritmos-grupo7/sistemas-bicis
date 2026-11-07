@@ -11,6 +11,7 @@ private:
 
 public:
     bool agregar(const Bicicleta &bicicleta);
+    bool eliminar(int id);
     // Puntero de lectura prestado del ABB; no liberarlo. nullptr si no existe.
     const Bicicleta *buscar(int id) const;
     void listarPorId() const;

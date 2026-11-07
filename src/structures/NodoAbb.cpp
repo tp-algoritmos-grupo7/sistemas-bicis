@@ -13,6 +13,11 @@ const Bicicleta &Nodo::obtenerDato() const
     return dato;
 }
 
+void Nodo::cambiarDato(const Bicicleta &bicicleta)
+{
+    dato = bicicleta;
+}
+
 Nodo *Nodo::obtenerIzquierdo() const
 {
     return izquierdo;

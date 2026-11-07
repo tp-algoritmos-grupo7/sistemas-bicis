@@ -26,7 +26,7 @@ bool leerEnteroValidado(const std::string &mensaje, int &valor)
     }
 }
 
-void agregarBicicletaDesdeConsola(RegistroBicicletas &registro)
+void agregarBicicletaDesdeConsola(RegistroBicicletas &registro, const TablaHash &estaciones)
 {
     int id;
     do
@@ -48,6 +48,11 @@ void agregarBicicletaDesdeConsola(RegistroBicicletas &registro)
                        && codigoEstacion.find_first_of(" \t\r\n\v\f") == std::string::npos;
         if (!codigoValido)
             std::cout << "Ingrese un codigo no vacio y sin espacios.\n";
+        else if (estaciones.buscar(codigoEstacion) == nullptr)
+        {
+            std::cout << "No existe una estacion con ese codigo.\n";
+            codigoValido = false;
+        }
     } while (!codigoValido);
 
     int opcionTipo;
@@ -127,7 +132,25 @@ void buscarBicicletaPorId(RegistroBicicletas &registro)
               << "Kilometros: " << bicicleta->getKilometros() << '\n';
 }
 
-void mostrarMenuBicicletas(RegistroBicicletas &registro)
+void eliminarBicicletaPorId(RegistroBicicletas &registro)
+{
+    int id;
+    do
+    {
+        if (!leerEnteroValidado("ID a eliminar: ", id))
+            return;
+
+        if (id <= 0)
+            std::cout << "El ID debe ser positivo.\n";
+    } while (id <= 0);
+
+    if (registro.eliminar(id))
+        std::cout << "Bicicleta eliminada.\n";
+    else
+        std::cout << "No existe una bicicleta con ese ID.\n";
+}
+
+void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaciones)
 {
     int opcion = -1;
 
@@ -140,6 +163,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
                   << "4. Listar por ID\n"
                   << "5. Contar averiadas\n"
                   << "6. Mostrar altura del ABB\n"
+                  << "7. Eliminar bicicleta por ID\n"
                   << "0. Volver al menu principal\n"
                   << "Seleccione una opcion: ";
 
@@ -152,7 +176,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
         std::string sobrante;
         if (!(entrada >> opcion) || (entrada >> sobrante))
         {
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
             opcion = -1;
             continue;
         }
@@ -169,7 +193,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
             break;
         }
         case 2:
-            agregarBicicletaDesdeConsola(registro);
+            agregarBicicletaDesdeConsola(registro, estaciones);
             break;
         case 3:
             buscarBicicletaPorId(registro);
@@ -189,11 +213,14 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro)
                 std::cout << "Altura del ABB (en aristas): " << altura << '\n';
             break;
         }
+        case 7:
+            eliminarBicicletaPorId(registro);
+            break;
         case 0:
             std::cout << "Volviendo al menu principal...\n";
             break;
         default:
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
             break;
         }
     } while (opcion != 0);
