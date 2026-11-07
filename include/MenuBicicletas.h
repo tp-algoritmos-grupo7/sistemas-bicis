@@ -10,6 +10,7 @@ bool leerEnteroValidado(const std::string &mensaje, int &valor);
 
 void agregarBicicletaDesdeConsola(RegistroBicicletas &registro, const TablaHash &estaciones);
 void buscarBicicletaPorId(RegistroBicicletas &registro);
+void eliminarBicicletaPorId(RegistroBicicletas &registro);
 
 void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaciones);
 

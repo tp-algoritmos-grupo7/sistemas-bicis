@@ -7,6 +7,11 @@ bool RegistroBicicletas::agregar(const Bicicleta &bicicleta)
     return bicicletas.insertar(bicicleta);
 }
 
+bool RegistroBicicletas::eliminar(int id)
+{
+    return bicicletas.eliminar(id);
+}
+
 const Bicicleta *RegistroBicicletas::buscar(int id) const
 {
     return bicicletas.buscar(id);
