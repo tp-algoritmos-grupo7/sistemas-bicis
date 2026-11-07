@@ -7,8 +7,6 @@ class Abb
 private:
     Nodo *raiz;
 
-    bool insertar(const Bicicleta &bicicleta, Nodo *nodo);
-    const Bicicleta *buscar(int biciId, Nodo *nodo) const;
     // Devuelve nullptr si el ID no existe o corresponde a la raiz.
     Nodo *buscarPadre(int biciId) const;
     void eliminarCasoHoja(Nodo *nodoAEliminar, Nodo *padre);

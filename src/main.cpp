@@ -15,6 +15,12 @@ int main()
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
     }
 
+    // Las bicicletas quedan disponibles antes de ingresar a cualquier modulo.
+    if (!registroBicicletas.cargarDesdeArchivo("datos/bicicletas.txt", std::cerr))
+    {
+        std::cerr << "Advertencia: carga de bicicletas con incidencias. Las bicicletas ya incorporadas se conservan.\n";
+    }
+
     // El grafo se arma con las estaciones ya cargadas y despues se le agregan las ciclovias
     GrafoCiclovias grafoCiclovias(tablaEstaciones);
     if (!grafoCiclovias.cargarDesdeArchivo("datos/ciclovias.txt"))
