@@ -157,13 +157,12 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
     do
     {
         std::cout << "\n=== Menu de bicicletas ===\n"
-                  << "1. Cargar bicicletas desde archivo\n"
-                  << "2. Agregar bicicleta\n"
-                  << "3. Buscar por ID\n"
-                  << "4. Listar por ID\n"
-                  << "5. Contar averiadas\n"
-                  << "6. Mostrar altura del ABB\n"
-                  << "7. Eliminar bicicleta por ID\n"
+                  << "1. Agregar bicicleta\n"
+                  << "2. Buscar por ID\n"
+                  << "3. Listar por ID\n"
+                  << "4. Contar averiadas\n"
+                  << "5. Mostrar altura del ABB\n"
+                  << "6. Eliminar bicicleta por ID\n"
                   << "0. Volver al menu principal\n"
                   << "Seleccione una opcion: ";
 
@@ -176,7 +175,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
         std::string sobrante;
         if (!(entrada >> opcion) || (entrada >> sobrante))
         {
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
             opcion = -1;
             continue;
         }
@@ -184,27 +183,18 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
         switch (opcion)
         {
         case 1:
-        {
-            std::ostringstream diagnosticos;
-            if (registro.cargarDesdeArchivo("datos/bicicletas.txt", diagnosticos))
-                std::cout << "Carga completada.\n";
-            else
-                std::cout << "Carga con incidencias. Las bicicletas ya incorporadas se conservan.\n";
-            break;
-        }
-        case 2:
             agregarBicicletaDesdeConsola(registro, estaciones);
             break;
-        case 3:
+        case 2:
             buscarBicicletaPorId(registro);
             break;
-        case 4:
+        case 3:
             registro.listarPorId();
             break;
-        case 5:
+        case 4:
             std::cout << "Bicicletas averiadas: " << registro.contarAveriadas() << '\n';
             break;
-        case 6:
+        case 5:
         {
             int altura = registro.obtenerAltura();
             if (altura == -1)
@@ -213,14 +203,14 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
                 std::cout << "Altura del ABB (en aristas): " << altura << '\n';
             break;
         }
-        case 7:
+        case 6:
             eliminarBicicletaPorId(registro);
             break;
         case 0:
             std::cout << "Volviendo al menu principal...\n";
             break;
         default:
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
             break;
         }
     } while (opcion != 0);

@@ -39,49 +39,49 @@ void Abb::liberar(Nodo *nodo)
     liberar(nodo->obtenerDerecho());
     delete nodo;
 }
-// metodo publico para insertar una bicicleta en el árbol
+// Inserta por biciId. Devuelve false si el ID ya existe.
 bool Abb::insertar(const Bicicleta &bicicleta)
 {
+    // Si el arbol esta vacio, la bicicleta pasa a ser la raiz.
     if (raiz == nullptr)
     {
         raiz = new Nodo(bicicleta);
         return true;
     }
-    else
-        return insertar(bicicleta, raiz);
-}
+    Nodo *actual = raiz;
+    int biciId = bicicleta.getBiciId();
 
-// metodo privado para insertar una bicicleta en el árbol a partir de un nodo
-// dado. La clave de ordenamiento es el biciId
-// retorna true si se inserta correctamente, false si ya existe
-bool Abb::insertar(const Bicicleta &bicicleta, Nodo *nodo)
-{
-    // si el biciId es menor, se inserta a la izquierda
-    if (bicicleta.getBiciId() < nodo->obtenerDato().getBiciId())
+    while (actual != nullptr)
     {
-        // si el nodo izquierdo es nulo, se inserta el nuevo nodo
-        if (nodo->obtenerIzquierdo() == nullptr)
+        // Si el ID ya existe, se retorna false.
+        if (biciId == actual->obtenerDato().getBiciId())
+            return false;
+
+        // Si el ID es menor, buscamos un lugar a la izquierda.
+        if (biciId < actual->obtenerDato().getBiciId())
         {
-            nodo->cambiarIzquierdo(new Nodo(bicicleta));
-            return true;
+            if (actual->obtenerIzquierdo() == nullptr)
+            {
+                // Si el ID es menor, se inserta a la izquierda.
+                actual->cambiarIzquierdo(new Nodo(bicicleta));
+                return true;
+            }
+            
+            actual = actual->obtenerIzquierdo();
         }
-        // si el nodo izquierdo no es nulo, se inserta el nuevo nodo en el nodo izquierdo
+        // Si el ID es mayor, buscamos un lugar a la derecha.
         else
-            return insertar(bicicleta, nodo->obtenerIzquierdo());
-    }
-    else if (bicicleta.getBiciId() > nodo->obtenerDato().getBiciId())
-    {
-        if (nodo->obtenerDerecho() == nullptr)
         {
-            nodo->cambiarDerecho(new Nodo(bicicleta));
-            return true;
+            if (actual->obtenerDerecho() == nullptr)
+            {
+                actual->cambiarDerecho(new Nodo(bicicleta));
+                return true;
+            }
+            actual = actual->obtenerDerecho();
         }
-        else
-            return insertar(bicicleta, nodo->obtenerDerecho());
     }
-    // si el biciId es igual, se retorna false
-    else
-        return false;
+
+    return false;
 }
 
 // metodo publico para buscar una bicicleta por biciId
@@ -89,22 +89,21 @@ bool Abb::insertar(const Bicicleta &bicicleta, Nodo *nodo)
 // El puntero pertenece al arbol: quien lo recibe no debe liberarlo
 const Bicicleta *Abb::buscar(int biciId) const
 {
-    return buscar(biciId, raiz);
-}
+    Nodo *actual = raiz;
 
-// metodo privado para buscar a partir de un nodo dado. En cada paso descarta
-// el subarbol que no puede contener el biciId
-const Bicicleta *Abb::buscar(int biciId, Nodo *nodo) const
-{
-    if (nodo == nullptr)
-        return nullptr;
+    // En cada paso avanzamos al unico subarbol que puede contener el ID.
+    while (actual != nullptr)
+    {
+        if (biciId == actual->obtenerDato().getBiciId())
+            return &actual->obtenerDato();
 
-    if (biciId < nodo->obtenerDato().getBiciId())
-        return buscar(biciId, nodo->obtenerIzquierdo());
-    else if (biciId > nodo->obtenerDato().getBiciId())
-        return buscar(biciId, nodo->obtenerDerecho());
-    else
-        return &nodo->obtenerDato();
+        if (biciId < actual->obtenerDato().getBiciId())
+            actual = actual->obtenerIzquierdo();
+        else
+            actual = actual->obtenerDerecho();
+    }
+
+    return nullptr;
 }
 
 Nodo *Abb::buscarPadre(int biciId) const
