@@ -29,11 +29,36 @@ int Estacion::obtenerBicisDisponibles() const {
     return bicisDisponibles;
 }
 
+// IMPLEMENTACIÓN DE LOS NUEVOS SETTERS
+void Estacion::asignarBicisDisponibles(int bicis) {
+    if (bicis >= 0 && bicis <= capacidadAnclajes) {
+        bicisDisponibles = bicis;
+    }
+}
+
+void Estacion::asignarCapacidadAnclajes(int capacidad) {
+    if (capacidad >= 0) {
+        capacidadAnclajes = capacidad;
+    }
+}
+
 double Estacion::obtenerPorcentajeOcupacion() const {
     if (capacidadAnclajes <= 0) {
         return 0.0;
     }
     return (static_cast<double>(bicisDisponibles) / static_cast<double>(capacidadAnclajes)) * 100.0;
+}
+
+void Estacion::encolarUsuario(long long dniUsuario) {
+    colaEspera.encolar(dniUsuario);
+}
+
+long long Estacion::desencolarUsuario() {
+    return colaEspera.desencolar();
+}
+
+bool Estacion::tieneUsuariosEsperando() const {
+    return !colaEspera.estaVacia();
 }
 
 void Estacion::mostrar() const {
