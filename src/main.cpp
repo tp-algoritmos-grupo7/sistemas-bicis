@@ -16,12 +16,8 @@ int main()
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
     }
 
-    // Cargar tu lista de viajes (Parte B)
+    // Cargar tu lista de viajes (Parte B) - LLAMADA CORRECTA A cargarViajes
     Lista<Viaje> listaViajes;
-    if (!cargarEstaciones("datos/viajes.txt", listaViajes)) // o cargarViajes segun tu funcion
-    {
-        // Nota: Asegurate de usar cargarViajes("datos/viajes.txt", listaViajes) tal como lo tenías:
-    }
     if (!cargarViajes("datos/viajes.txt", listaViajes))
     {
         std::cerr << "Advertencia: no se pudo cargar el archivo de viajes.\n";
