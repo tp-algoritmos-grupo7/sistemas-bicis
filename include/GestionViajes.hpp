@@ -7,11 +7,10 @@
 #include "Viaje.hpp"
 #include "Lista.hpp"
 
-// Funciones principales del módulo
 bool cargarViajes(const std::string& ruta, Lista<Viaje>& listaViajes);
 void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones);
-
-// Nuevas funciones de consulta
+void registrarViaje(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones);
+void registrarDevolucion(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones);
 void listarViajesPorUsuario(const Lista<Viaje>& listaViajes);
 
 #endif // GESTION_VIAJES_HPP
