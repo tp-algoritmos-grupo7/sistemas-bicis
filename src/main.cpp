@@ -33,7 +33,7 @@ int main() {
                 ejecutarMenuEstaciones(tablaEstaciones);
                 break;
             case 2:
-                ejecutarMenuViajes(listaViajes);
+                ejecutarMenuViajes(listaViajes, tablaEstaciones);
                 break;
             case 3:
                 std::cout << "\n[Aviso: Parte C en desarrollo]\n";
