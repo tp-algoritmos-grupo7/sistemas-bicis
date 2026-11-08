@@ -2,15 +2,16 @@
 #define GESTION_VIAJES_HPP
 
 #include <string>
-#include "Lista.hpp"
+#include "TablaHash.hpp"
+#include "Estacion.hpp"
 #include "Viaje.hpp"
+#include "Lista.hpp"
 
-bool cargarViajes(const std::string& rutaArchivo, Lista<Viaje>& listaViajes);
+// Funciones principales del módulo
+bool cargarViajes(const std::string& ruta, Lista<Viaje>& listaViajes);
+void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones);
 
-void contarViajesPorEstacionYFechas(const Lista<Viaje>& listaViajes);
-
-void buscarViajesPorDni(const Lista<Viaje>& listaViajes);
-
-void ejecutarMenuViajes(const Lista<Viaje>& listaViajes);
+// Nuevas funciones de consulta
+void listarViajesPorUsuario(const Lista<Viaje>& listaViajes);
 
 #endif // GESTION_VIAJES_HPP
