@@ -2,15 +2,17 @@
 #include <iostream>
 #include <limits>
 
-/*Función recursiva auxiliar de backtracking para explorar las combinaciones*/
-static void backtrackingRedistribucion(const std::vector<EstacionFaltante> &estaciones,
+/* Función recursiva auxiliar de backtracking utilizando arreglos dinámicos puros */
+static void backtrackingRedistribucion(const EstacionFaltante *estaciones,
+                                       int cantidadEstaciones,
                                        int capacidadCamion,
-                                       size_t indiceActual,
+                                       int indiceActual,
                                        int sumaActual,
-                                       std::vector<std::string> &caminoActual,
+                                       std::string *caminoActual,
+                                       int tamanioCamino,
                                        bool &encontradoAlguna)
 {
-    // Si la suma actual supera la capacidad del camión, cortamos esta rama
+    // Si la suma actual supera la capacidad del camión, cortamos esta rama (poda)
     if (sumaActual > capacidadCamion)
     {
         return;
@@ -20,42 +22,50 @@ static void backtrackingRedistribucion(const std::vector<EstacionFaltante> &esta
     if (sumaActual == capacidadCamion)
     {
         std::cout << "{ ";
-        for (size_t i = 0; i < caminoActual.size(); ++i)
+        for (int i = 0; i < tamanioCamino; ++i)
         {
-            std::cout << caminoActual[i] << (i + 1 < caminoActual.size() ? ", " : "");
+            std::cout << caminoActual[i] << (i + 1 < tamanioCamino ? ", " : "");
         }
         std::cout << " }\n";
         encontradoAlguna = true;
         return;
     }
 
-    // Si llegamos al final del vector de estaciones sin alcanzar C, retornamos
-    if (indiceActual == estaciones.size())
+    // Si llegamos al final del arreglo de estaciones sin alcanzar C, retornamos
+    if (indiceActual == cantidadEstaciones)
     {
         return;
     }
 
-    // ELECCIÓN: Incluir la estación actual en el subconjunto
-    caminoActual.push_back(estaciones[indiceActual].codigo);
-    backtrackingRedistribucion(estaciones, capacidadCamion, indiceActual + 1,
-                               sumaActual + estaciones[indiceActual].faltantes, caminoActual, encontradoAlguna);
+    // ELECCIÓN: Incluir la estación actual en el subconjunto (solo si tiene faltantes > 0)
+    if (estaciones[indiceActual].faltantes > 0)
+    {
+        caminoActual[tamanioCamino] = estaciones[indiceActual].codigo;
+        backtrackingRedistribucion(estaciones, cantidadEstaciones, capacidadCamion,
+                                   indiceActual + 1,
+                                   sumaActual + estaciones[indiceActual].faltantes,
+                                   caminoActual, tamanioCamino + 1, encontradoAlguna);
+    }
 
-    // BACKTRACKING: Deshacer la elección (quitar la estación para probar la siguiente rama)
-    caminoActual.pop_back();
-
-    // ALTERNATIVA: Excluir la estación actual y pasar a la siguiente
-    backtrackingRedistribucion(estaciones, capacidadCamion, indiceActual + 1,
-                               sumaActual, caminoActual, encontradoAlguna);
+    // ALTERNATIVA: Excluir la estación actual (o pasar si su faltante era 0) y avanzar a la siguiente
+    backtrackingRedistribucion(estaciones, cantidadEstaciones, capacidadCamion,
+                               indiceActual + 1,
+                               sumaActual,
+                               caminoActual, tamanioCamino, encontradoAlguna);
 }
 
-void resolverRedistribucion(const std::vector<EstacionFaltante> &estaciones, int capacidadC)
+void resolverRedistribucion(const EstacionFaltante *estaciones, int cantidadEstaciones, int capacidadC)
 {
-    std::cout << "\nREDISTRIBUCION DE BICICLETAS (Capacidad C = " << capacidadC << ") ===\n";
+    std::cout << "\n=== REDISTRIBUCION DE BICICLETAS (Capacidad C = " << capacidadC << ") ===\n";
 
-    std::vector<std::string> caminoActual;
+    // Creamos un arreglo dinamico propio para el camino en lugar de std::vector
+    std::string *caminoActual = new std::string[cantidadEstaciones];
     bool encontradoAlguna = false;
 
-    backtrackingRedistribucion(estaciones, capacidadC, 0, 0, caminoActual, encontradoAlguna);
+    backtrackingRedistribucion(estaciones, cantidadEstaciones, capacidadC, 0, 0, caminoActual, 0, encontradoAlguna);
+
+    // Liberamos la memoria del arreglo
+    delete[] caminoActual;
 
     if (!encontradoAlguna)
     {
@@ -69,8 +79,9 @@ void mostrarMenuRedistribucion()
 {
     std::cout << "\n=== REDISTRIBUCION DE BICICLETAS ===" << std::endl;
     int capacidadC = 0;
-    if (!leerEnteroValidado("Ingrese la capacidad C del camion: ", capacidadC))
+    if (!leerEnteroValidado("Ingrese la capacidad C del camion: ", capacidadC) || capacidadC <= 0)
     {
+        std::cout << "Capacidad invalida. Debe ser mayor a 0.\n";
         return;
     }
 
@@ -81,26 +92,42 @@ void mostrarMenuRedistribucion()
         return;
     }
 
-    std::vector<EstacionFaltante> estacionesFaltantes;
+    EstacionFaltante *estacionesFaltantes = new EstacionFaltante[cantidadEstaciones];
+    int estacionesConFaltantes = 0;
+
     for (int i = 0; i < cantidadEstaciones; ++i)
     {
-        EstacionFaltante est;
         std::cout << "\nEstacion #" << (i + 1) << "\n";
         std::cout << "  Ingrese el codigo de la estacion (ej. PLZ): ";
-        std::cin >> est.codigo;
+        std::cin >> estacionesFaltantes[i].codigo;
 
-        // Limpiamos el buffer para que el Enter del código no interfiera con la lectura numérica
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        if (!leerEnteroValidado("  Ingrese bicicletas faltantes: ", est.faltantes) || est.faltantes < 0)
+        int faltantes = 0;
+        if (!leerEnteroValidado("  Ingrese bicicletas faltantes (>= 0): ", faltantes) || faltantes < 0)
         {
             std::cout << "Valor invalido. Se cancela la operacion.\n";
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            delete[] estacionesFaltantes;
             return;
         }
-        estacionesFaltantes.push_back(est);
+
+        estacionesFaltantes[i].faltantes = faltantes;
+        if (faltantes > 0)
+        {
+            estacionesConFaltantes++;
+        }
     }
 
-    // Ejecutar el algoritmo de backtracking con los datos ingresados
-    resolverRedistribucion(estacionesFaltantes, capacidadC);
+    if (estacionesConFaltantes == 0)
+    {
+        std::cout << "\nAviso: No hay estaciones con bicicletas faltantes (> 0) para redistribuir.\n";
+        delete[] estacionesFaltantes;
+        return;
+    }
+
+    // Ejecutar el algoritmo de backtracking con el arreglo dinámico
+    resolverRedistribucion(estacionesFaltantes, cantidadEstaciones, capacidadC);
+
+    // Liberar la memoria del arreglo principal
+    delete[] estacionesFaltantes;
 }
