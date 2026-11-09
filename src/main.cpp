@@ -2,6 +2,7 @@
 #include <limits>
 #include "TablaHash.hpp"
 #include "GestionEstaciones.hpp"
+#include "GestionViajes.hpp"
 #include "MenuBicicletas.h"
 #include "Redistribucion.hpp"
 
@@ -15,13 +16,20 @@ int main()
         std::cerr << "Advertencia: no se pudo cargar el archivo de estaciones.\n";
     }
 
-    // Las bicicletas quedan disponibles antes de ingresar a cualquier modulo.
+    // Cargar tu lista de viajes (Parte B) - LLAMADA CORRECTA A cargarViajes
+    Lista<Viaje> listaViajes;
+    if (!cargarViajes("datos/viajes.txt", listaViajes))
+    {
+        std::cerr << "Advertencia: no se pudo cargar el archivo de viajes.\n";
+    }
+
+    // Cargar bicicletas de dev
     if (!registroBicicletas.cargarDesdeArchivo("datos/bicicletas.txt", std::cerr))
     {
         std::cerr << "Advertencia: carga de bicicletas con incidencias. Las bicicletas ya incorporadas se conservan.\n";
     }
 
-    // El grafo se arma con las estaciones ya cargadas y despues se le agregan las ciclovias
+    // Cargar ciclovías de dev
     GrafoCiclovias grafoCiclovias(tablaEstaciones);
     if (!grafoCiclovias.cargarDesdeArchivo("datos/ciclovias.txt"))
     {
@@ -48,11 +56,11 @@ int main()
         {
         case 1:
             ejecutarMenuEstaciones(tablaEstaciones, grafoCiclovias);
-            // El menu de estaciones deja pendiente el salto de linea.
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
         case 2:
-            std::cout << "\n[Aviso: Parte B en desarrollo]\n";
+            // ¡Acá está tu módulo de viajes integrado con dev!
+            ejecutarMenuViajes(listaViajes, tablaEstaciones);
             break;
         case 3:
             mostrarMenuBicicletas(registroBicicletas, tablaEstaciones);
