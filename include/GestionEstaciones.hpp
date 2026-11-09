@@ -14,7 +14,7 @@ bool cargarEstaciones(const std::string& rutaArchivo, TablaHash& tabla);
 
 void mostrarEstacionPorCodigo(const TablaHash& tabla, const std::string& codigo);
 
-void agregarEstacionInteractivo(TablaHash& tabla);
+void agregarEstacionInteractivo(TablaHash& tabla, GrafoCiclovias& grafo);
 
 void eliminarEstacionInteractivo(TablaHash& tabla, GrafoCiclovias& grafo);
 
