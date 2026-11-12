@@ -1,5 +1,4 @@
 #include <iostream>
-#include <limits>
 #include "TablaHash.hpp"
 #include "GestionEstaciones.hpp"
 #include "GestionViajes.hpp"
@@ -56,7 +55,6 @@ int main()
         {
         case 1:
             ejecutarMenuEstaciones(tablaEstaciones, grafoCiclovias);
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
         case 2:
             // ¡Acá está tu módulo de viajes integrado con dev!

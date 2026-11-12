@@ -1,6 +1,30 @@
 #include "GestionEstaciones.hpp"
+#include "MenuBicicletas.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
+
+// Lee una linea completa y exige una sola palabra (codigos, nombres y barrios no llevan espacios).
+// Devuelve false si termina la entrada.
+static bool leerPalabra(const std::string& mensaje, std::string& palabra) {
+    while (true) {
+        std::cout << mensaje;
+
+        std::string linea;
+        if (!std::getline(std::cin, linea)) {
+            return false;
+        }
+
+        std::istringstream entrada(linea);
+        std::string leida, sobrante;
+        if ((entrada >> leida) && !(entrada >> sobrante)) {
+            palabra = leida;
+            return true;
+        }
+
+        std::cout << "Entrada invalida. Ingrese una sola palabra, sin espacios.\n";
+    }
+}
 
 bool cargarEstaciones(const std::string& rutaArchivo, TablaHash& tabla) {
     std::ifstream archivo(rutaArchivo);
@@ -33,40 +57,48 @@ void mostrarEstacionPorCodigo(const TablaHash& tabla, const std::string& codigo)
     }
 }
 
-void agregarEstacionInteractivo(TablaHash& tabla) {
+void agregarEstacionInteractivo(TablaHash& tabla, GrafoCiclovias& grafo) {
     std::string codigo, nombre, barrio;
-    int capacidad, disponibles;
+    int capacidad = 0;
+    int disponibles = -1;
 
     std::cout << "\n--- Agregar Nueva Estacion ---\n";
-    std::cout << "Codigo (ej. RET): ";
-    std::cin >> codigo;
+    if (!leerPalabra("Codigo (ej. RET): ", codigo)) {
+        return;
+    }
 
     if (tabla.buscar(codigo) != nullptr) {
         std::cout << "Error: Ya existe una estacion con el codigo '" << codigo << "'.\n";
         return;
     }
 
-    std::cout << "Nombre: ";
-    std::cin >> nombre;
-    std::cout << "Barrio: ";
-    std::cin >> barrio;
-    
-    std::cout << "Capacidad de anclajes: ";
-    std::cin >> capacidad;
-    while (capacidad <= 0) {
-        std::cout << "La capacidad debe ser mayor a 0. Ingrese nuevamente: ";
-        std::cin >> capacidad;
+    if (!leerPalabra("Nombre: ", nombre) || !leerPalabra("Barrio: ", barrio)) {
+        return;
     }
 
-    std::cout << "Bicicletas disponibles: ";
-    std::cin >> disponibles;
+    if (!leerEnteroValidado("Capacidad de anclajes: ", capacidad)) {
+        return;
+    }
+    while (capacidad <= 0) {
+        if (!leerEnteroValidado("La capacidad debe ser mayor a 0. Ingrese nuevamente: ", capacidad)) {
+            return;
+        }
+    }
+
+    if (!leerEnteroValidado("Bicicletas disponibles: ", disponibles)) {
+        return;
+    }
     while (disponibles < 0 || disponibles > capacidad) {
-        std::cout << "Debe estar entre 0 y " << capacidad << ". Ingrese nuevamente: ";
-        std::cin >> disponibles;
+        std::string mensaje = "Debe estar entre 0 y " + std::to_string(capacidad) + ". Ingrese nuevamente: ";
+        if (!leerEnteroValidado(mensaje, disponibles)) {
+            return;
+        }
     }
 
     Estacion* nueva = new Estacion(codigo, nombre, barrio, capacidad, disponibles);
     if (tabla.insertar(nueva)) {
+        // La estacion entra al grafo sin ciclovias, asi el BFS la reconoce
+        grafo.agregarEstacion(codigo);
         std::cout << "\nEstacion '" << codigo << "' agregada con exito.\n";
     } else {
         std::cout << "\nError al insertar en la tabla.\n";
@@ -77,8 +109,9 @@ void agregarEstacionInteractivo(TablaHash& tabla) {
 void eliminarEstacionInteractivo(TablaHash& tabla, GrafoCiclovias& grafo) {
     std::string codigo;
     std::cout << "\n--- Eliminar Estacion Existente ---\n";
-    std::cout << "Ingrese el codigo de la estacion a eliminar: ";
-    std::cin >> codigo;
+    if (!leerPalabra("Ingrese el codigo de la estacion a eliminar: ", codigo)) {
+        return;
+    }
 
     if (tabla.eliminar(codigo)) {
         // Sin la estacion, sus ciclovias tampoco se pueden usar en los recorridos
@@ -133,27 +166,31 @@ void listarEstacionesOrdenadas(const TablaHash& tabla) {
         return;
     }
 
-    int criterio;
+    int criterio = 0;
     std::cout << "\n--- Listar Estaciones Ordenadas ---\n";
     std::cout << "Ordenar por:\n";
     std::cout << "1. Capacidad de anclajes\n";
     std::cout << "2. Bicicletas disponibles\n";
-    std::cout << "Opcion: ";
-    std::cin >> criterio;
+    if (!leerEnteroValidado("Opcion: ", criterio)) {
+        return;
+    }
     while (criterio != ORDEN_POR_CAPACIDAD && criterio != ORDEN_POR_DISPONIBLES) {
-        std::cout << "Opcion no valida. Ingrese 1 o 2: ";
-        std::cin >> criterio;
+        if (!leerEnteroValidado("Opcion no valida. Ingrese 1 o 2: ", criterio)) {
+            return;
+        }
     }
 
-    int sentido;
+    int sentido = 0;
     std::cout << "Sentido:\n";
     std::cout << "1. De mayor a menor\n";
     std::cout << "2. De menor a mayor\n";
-    std::cout << "Opcion: ";
-    std::cin >> sentido;
+    if (!leerEnteroValidado("Opcion: ", sentido)) {
+        return;
+    }
     while (sentido != 1 && sentido != 2) {
-        std::cout << "Opcion no valida. Ingrese 1 o 2: ";
-        std::cin >> sentido;
+        if (!leerEnteroValidado("Opcion no valida. Ingrese 1 o 2: ", sentido)) {
+            return;
+        }
     }
 
     // Se copian los punteros a un arreglo auxiliar para ordenar sin tocar la tabla hash
@@ -175,10 +212,10 @@ void listarEstacionesOrdenadas(const TablaHash& tabla) {
 void buscarRecorridoInteractivo(const TablaHash& tabla, const GrafoCiclovias& grafo) {
     std::string origen, destino;
     std::cout << "\n--- Recorrido por Ciclovias (BFS) ---\n";
-    std::cout << "Codigo de la estacion de origen: ";
-    std::cin >> origen;
-    std::cout << "Codigo de la estacion de destino: ";
-    std::cin >> destino;
+    if (!leerPalabra("Codigo de la estacion de origen: ", origen) ||
+        !leerPalabra("Codigo de la estacion de destino: ", destino)) {
+        return;
+    }
 
     if (tabla.buscar(origen) == nullptr) {
         std::cout << "\nError: No existe la estacion '" << origen << "'.\n";
@@ -227,16 +264,17 @@ void ejecutarMenuEstaciones(TablaHash& tabla, GrafoCiclovias& grafo) {
         std::cout << "7. Ver metricas de la Tabla Hash\n";
         std::cout << "8. Ver estructura interna de la Tabla Hash\n";
         std::cout << "0. Volver al Menu Principal\n";
-        std::cout << "Seleccione una opcion: ";
-        std::cin >> opcion;
+        if (!leerEnteroValidado("Seleccione una opcion: ", opcion)) {
+            return;
+        }
 
         if (opcion == 1) {
             std::string cod;
-            std::cout << "\nIngrese codigo de la estacion a consultar: ";
-            std::cin >> cod;
-            mostrarEstacionPorCodigo(tabla, cod);
+            if (leerPalabra("\nIngrese codigo de la estacion a consultar: ", cod)) {
+                mostrarEstacionPorCodigo(tabla, cod);
+            }
         } else if (opcion == 2) {
-            agregarEstacionInteractivo(tabla);
+            agregarEstacionInteractivo(tabla, grafo);
         } else if (opcion == 3) {
             eliminarEstacionInteractivo(tabla, grafo);
         } else if (opcion == 4) {

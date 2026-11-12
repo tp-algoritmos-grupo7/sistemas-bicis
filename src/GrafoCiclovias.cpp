@@ -5,8 +5,9 @@
 
 GrafoCiclovias::GrafoCiclovias(const TablaHash& tabla) {
     cantidad = static_cast<int>(tabla.obtenerCantidad());
-    codigos = new std::string[cantidad];
-    adyacentes = new Lista<int>[cantidad];
+    capacidad = (cantidad > 0) ? cantidad : 1;
+    codigos = new std::string[capacidad];
+    adyacentes = new Lista<int>[capacidad];
 
     Estacion** todas = new Estacion*[cantidad];
     tabla.obtenerTodas(todas);
@@ -28,6 +29,41 @@ int GrafoCiclovias::buscarIndice(const std::string& codigo) const {
         }
     }
     return -1;
+}
+
+void GrafoCiclovias::agrandar() {
+    int nuevaCapacidad = capacidad * 2;
+    std::string* nuevosCodigos = new std::string[nuevaCapacidad];
+    Lista<int>* nuevosAdyacentes = new Lista<int>[nuevaCapacidad];
+
+    // Las listas no se pueden copiar, se pasan los vecinos uno por uno
+    for (int i = 0; i < cantidad; i++) {
+        nuevosCodigos[i] = codigos[i];
+        auto it = adyacentes[i].obtenerIterador();
+        while (it.tieneSiguiente()) {
+            nuevosAdyacentes[i].insertarAlFinal(it.siguiente());
+        }
+    }
+
+    delete[] codigos;
+    delete[] adyacentes;
+    codigos = nuevosCodigos;
+    adyacentes = nuevosAdyacentes;
+    capacidad = nuevaCapacidad;
+}
+
+bool GrafoCiclovias::agregarEstacion(const std::string& codigo) {
+    // Si la estacion se habia eliminado, su vertice sigue en el grafo sin ciclovias y se reutiliza
+    if (buscarIndice(codigo) != -1) {
+        return false;
+    }
+
+    if (cantidad == capacidad) {
+        agrandar();
+    }
+    codigos[cantidad] = codigo;
+    cantidad++;
+    return true;
 }
 
 bool GrafoCiclovias::agregarCiclovia(const std::string& codigoA, const std::string& codigoB) {
