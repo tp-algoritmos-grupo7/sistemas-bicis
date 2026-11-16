@@ -153,6 +153,7 @@ Cuando se elimina una estación, también se borran sus ciclovías del grafo par
 
 - Consulta por DNI y minutos: recorre la lista de viajes con un iterador, filtra por DNI y acumula el total de minutos pedaleados. Complejidad: `O(n)`.
 - Conteo por rango de fechas: permite calcular la cantidad de viajes originados en una estación específica durante un intervalo de tiempo en formato `AAAAMMDD`. Complejidad: `O(n)`.
+- Bicicletas para revisión (más de X km): desde el menú de bicicletas (opción 7) se ingresa X y se recorre el ABB en inorden mostrando solo las que superan esos kilómetros, ordenadas por ID. Complejidad: `O(n)`, porque el árbol está ordenado por ID y no por kilómetros, así que hay que visitar todos los nodos.
 - Cola de espera por estación (FIFO): cada estación administra una `Cola` independiente. Si un usuario solicita un préstamo y la estación no tiene stock, se encola automáticamente. Cuando llega una devolución, el sistema saca al primer usuario y le asigna la bicicleta devuelta al instante. Complejidad de encolar y desencolar: `O(1)`.
 - Taller de reparaciones (Min-Heap): estructura basada en un arreglo dinámico con algoritmos internos de `flotar` y `hundir`. Las bicicletas averiadas se insertan con una prioridad numérica del 1 al 3; los vehículos eléctricos ingresan siempre con prioridad máxima (`1`). Inserción y extracción de la unidad más urgente: `O(log n)`.
 

@@ -14,6 +14,15 @@ namespace
     {
         return estado == Bicicleta::Estado::OK ? "OK" : "Averiada";
     }
+
+    void mostrarBicicleta(const Bicicleta &bicicleta)
+    {
+        cout << bicicleta.getBiciId() << " "
+             << bicicleta.getCodigoEstacion() << " "
+             << textoTipo(bicicleta.getTipo()) << " "
+             << textoEstado(bicicleta.getEstado()) << " "
+             << bicicleta.getKilometros() << "\n";
+    }
 }
 
 Abb::Abb()
@@ -172,15 +181,33 @@ void Abb::recorridoInorden(Nodo *nodo) const
         return;
 
     recorridoInorden(nodo->obtenerIzquierdo());
+    mostrarBicicleta(nodo->obtenerDato());
+    recorridoInorden(nodo->obtenerDerecho());
+}
+
+// metodo publico para listar las bicicletas que superan los kilometros dados
+int Abb::listarConMasKilometros(int kilometros) const
+{
+    return listarConMasKilometros(raiz, kilometros);
+}
+
+// recorrido inorden que solo muestra las bicicletas con mas de "kilometros" km.
+// Visita todos los nodos porque el arbol esta ordenado por ID, no por kilometros
+int Abb::listarConMasKilometros(Nodo *nodo, int kilometros) const
+{
+    if (nodo == nullptr)
+        return 0;
+
+    int cantidad = listarConMasKilometros(nodo->obtenerIzquierdo(), kilometros);
 
     const Bicicleta &bicicleta = nodo->obtenerDato();
-    cout << bicicleta.getBiciId() << " "
-         << bicicleta.getCodigoEstacion() << " "
-         << textoTipo(bicicleta.getTipo()) << " "
-         << textoEstado(bicicleta.getEstado()) << " "
-         << bicicleta.getKilometros() << "\n";
+    if (bicicleta.getKilometros() > kilometros)
+    {
+        mostrarBicicleta(bicicleta);
+        cantidad++;
+    }
 
-    recorridoInorden(nodo->obtenerDerecho());
+    return cantidad + listarConMasKilometros(nodo->obtenerDerecho(), kilometros);
 }
 
 // metodo publico para contar las bicicletas averiadas en el arbol

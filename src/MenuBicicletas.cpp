@@ -150,6 +150,28 @@ void eliminarBicicletaPorId(RegistroBicicletas &registro)
         std::cout << "No existe una bicicleta con ese ID.\n";
 }
 
+void listarBicicletasParaRevision(const RegistroBicicletas &registro)
+{
+    int kilometros;
+    do
+    {
+        if (!leerEnteroValidado("Kilometros minimos (X): ", kilometros))
+            return;
+
+        if (kilometros < 0)
+            std::cout << "Los kilometros no pueden ser negativos.\n";
+    } while (kilometros < 0);
+
+    std::cout << "Bicicletas con mas de " << kilometros << " km (enviar a revision):\n"
+              << "ID Estacion Tipo Estado Kilometros\n";
+
+    int cantidad = registro.listarConMasKilometros(kilometros);
+    if (cantidad == 0)
+        std::cout << "Ninguna bicicleta supera esos kilometros.\n";
+    else
+        std::cout << "Total para revision: " << cantidad << '\n';
+}
+
 void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaciones)
 {
     int opcion = -1;
@@ -163,6 +185,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
                   << "4. Contar averiadas\n"
                   << "5. Mostrar altura del ABB\n"
                   << "6. Eliminar bicicleta por ID\n"
+                  << "7. Listar bicicletas con mas de X km (revision)\n"
                   << "0. Volver al menu principal\n"
                   << "Seleccione una opcion: ";
 
@@ -175,7 +198,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
         std::string sobrante;
         if (!(entrada >> opcion) || (entrada >> sobrante))
         {
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
             opcion = -1;
             continue;
         }
@@ -206,11 +229,14 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
         case 6:
             eliminarBicicletaPorId(registro);
             break;
+        case 7:
+            listarBicicletasParaRevision(registro);
+            break;
         case 0:
             std::cout << "Volviendo al menu principal...\n";
             break;
         default:
-            std::cout << "Opcion invalida. Ingrese un numero del 0 al 6.\n";
+            std::cout << "Opcion invalida. Ingrese un numero del 0 al 7.\n";
             break;
         }
     } while (opcion != 0);
