@@ -39,6 +39,11 @@ int RegistroBicicletas::obtenerAltura() const
     return bicicletas.altura();
 }
 
+int RegistroBicicletas::listarConMasKilometros(int kilometros) const
+{
+    return bicicletas.listarConMasKilometros(kilometros);
+}
+
 bool RegistroBicicletas::cargarDesdeArchivo(const std::string &ruta, std::ostream &diagnosticos)
 {
     std::ifstream archivo(ruta);

@@ -17,6 +17,8 @@ public:
     void listarPorId() const;
     int contarAveriadas() const;
     int obtenerAltura() const;
+    // Lista las bicicletas con mas de "kilometros" km y devuelve cuantas son.
+    int listarConMasKilometros(int kilometros) const;
     // Agrega al registro existente. Omite duplicados y devuelve false si los hubo.
     bool cargarDesdeArchivo(const std::string &ruta, std::ostream &diagnosticos);
 };

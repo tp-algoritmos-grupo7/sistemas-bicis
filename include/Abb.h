@@ -18,6 +18,7 @@ private:
     void recorridoInorden(Nodo *nodo) const;
     void liberar(Nodo *nodo);
     int contarBicicletasAveriadas(Nodo *nodo) const;
+    int listarConMasKilometros(Nodo *nodo, int kilometros) const;
 
 public:
     Abb();
@@ -35,6 +36,8 @@ public:
     int altura() const;
     void recorridoInorden() const;
     int contarBicicletasAveriadas() const;
+    // Muestra por ID las bicicletas con mas de "kilometros" km y devuelve cuantas son.
+    int listarConMasKilometros(int kilometros) const;
     bool eliminar(int biciId);
 };
 
