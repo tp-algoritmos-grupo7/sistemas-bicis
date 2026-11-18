@@ -25,9 +25,9 @@ bool RegistroBicicletas::agregar(const Bicicleta &bicicleta, TablaHash &estacion
         return false;
     }
 
-    if (bicicleta.estaEnViaje())
+    if (bicicleta.estaEnViaje() || bicicleta.estaEnTaller())
     {
-        aviso = "No se puede dar de alta una bicicleta que esta en viaje.";
+        aviso = "No se puede dar de alta una bicicleta que esta en viaje o en el taller.";
         return false;
     }
 
@@ -74,6 +74,12 @@ bool RegistroBicicletas::eliminar(int id, TablaHash &estaciones, std::string &av
         return false;
     }
 
+    if (bicicleta->estaEnTaller())
+    {
+        aviso = "No se puede eliminar una bicicleta que esta en el taller.";
+        return false;
+    }
+
     Estacion *estacion = estaciones.buscar(bicicleta->getCodigoEstacion());
     const bool descontarStock = estacion != nullptr && bicicleta->getEstado() == Bicicleta::Estado::OK;
     if (descontarStock && estacion->obtenerBicisDisponibles() <= 0)
@@ -105,6 +111,8 @@ bool RegistroBicicletas::prestar(int id, const std::string &codigoOrigen,
         aviso = "No existe una bicicleta con ese ID.";
     else if (bicicleta->estaEnViaje())
         aviso = "La bicicleta ya esta en viaje.";
+    else if (bicicleta->estaEnTaller())
+        aviso = "La bicicleta esta en el taller y no se puede prestar.";
     else if (bicicleta->getEstado() != Bicicleta::Estado::OK)
         aviso = "La bicicleta esta averiada y no se puede prestar.";
     else if (bicicleta->getCodigoEstacion() != codigoOrigen)
@@ -142,6 +150,8 @@ bool RegistroBicicletas::devolver(int id, const std::string &codigoDestino,
     const Bicicleta *bicicleta = bicicletas.buscar(id);
     if (bicicleta == nullptr)
         aviso = "No existe una bicicleta con ese ID.";
+    else if (bicicleta->estaEnTaller())
+        aviso = "La bicicleta esta en el taller: debe salir mediante una reparacion.";
     else if (!bicicleta->estaEnViaje())
         aviso = "La bicicleta no esta en viaje: no se puede devolver otra vez.";
     if (!aviso.empty())
@@ -168,6 +178,96 @@ bool RegistroBicicletas::devolver(int id, const std::string &codigoDestino,
     }
     if (actualizada.getEstado() == Bicicleta::Estado::OK)
         destino->asignarBicisDisponibles(destino->obtenerBicisDisponibles() + 1);
+    return true;
+}
+
+bool RegistroBicicletas::enviarATaller(int id, int prioridad, TablaHash &estaciones, std::string &aviso)
+{
+    aviso.clear();
+    const Bicicleta *bicicleta = bicicletas.buscar(id);
+    if (bicicleta == nullptr)
+        aviso = "No existe una bicicleta con ese ID.";
+    else if (bicicleta->estaEnViaje())
+        aviso = "No se puede enviar al taller una bicicleta que esta en viaje.";
+    else if (bicicleta->estaEnTaller())
+        aviso = "La bicicleta ya esta en el taller.";
+    else if (prioridad < 1 || prioridad > 3)
+        aviso = "La prioridad debe estar entre 1 y 3.";
+    else if (taller.estaLleno())
+        aviso = "El taller esta lleno.";
+    if (!aviso.empty())
+        return false;
+
+    Estacion *origen = estaciones.buscar(bicicleta->getCodigoEstacion());
+    const bool descontarStock = origen != nullptr && bicicleta->getEstado() == Bicicleta::Estado::OK;
+    if (descontarStock && origen->obtenerBicisDisponibles() <= 0)
+    {
+        aviso = "El stock de la estacion es inconsistente: no hay disponibles para descontar.";
+        return false;
+    }
+
+    const Bicicleta original = *bicicleta;
+    Bicicleta actualizada = original;
+    actualizada.ingresarAlTaller();
+    if (!bicicletas.actualizar(actualizada))
+    {
+        aviso = "No se pudo actualizar la bicicleta.";
+        return false;
+    }
+    const std::string tipo = original.getTipo() == Bicicleta::Tipo::Electrica ? "Electrica" : "Mecanica";
+    if (!taller.insertar(id, tipo, prioridad))
+    {
+        bicicletas.actualizar(original);
+        aviso = "No se pudo ingresar la bicicleta al taller.";
+        return false;
+    }
+    if (descontarStock)
+        origen->asignarBicisDisponibles(origen->obtenerBicisDisponibles() - 1);
+    return true;
+}
+
+const ElementoTaller *RegistroBicicletas::consultarProximaReparacion() const
+{
+    return taller.consultarMin();
+}
+
+bool RegistroBicicletas::repararProxima(const std::string &codigoDestino,
+                                     TablaHash &estaciones, std::string &aviso)
+{
+    aviso.clear();
+    const ElementoTaller *proxima = taller.consultarMin();
+    if (proxima == nullptr)
+    {
+        aviso = "El taller no tiene bicicletas pendientes.";
+        return false;
+    }
+    const Bicicleta *bicicleta = bicicletas.buscar(proxima->biciId);
+    if (bicicleta == nullptr || !bicicleta->estaEnTaller() || bicicleta->estaEnViaje())
+    {
+        aviso = "La bicicleta del taller no coincide con el registro.";
+        return false;
+    }
+    Estacion *destino = estaciones.buscar(codigoDestino);
+    if (destino == nullptr)
+    {
+        aviso = "La estacion de destino no existe.";
+        return false;
+    }
+    if (!tieneAnclajeLibre(*destino))
+    {
+        aviso = "La estacion de destino no tiene anclajes libres. La bicicleta sigue en el taller.";
+        return false;
+    }
+
+    Bicicleta actualizada = *bicicleta;
+    actualizada.finalizarReparacion(codigoDestino);
+    if (!bicicletas.actualizar(actualizada))
+    {
+        aviso = "No se pudo actualizar la bicicleta.";
+        return false;
+    }
+    taller.extraerMin();
+    destino->asignarBicisDisponibles(destino->obtenerBicisDisponibles() + 1);
     return true;
 }
 

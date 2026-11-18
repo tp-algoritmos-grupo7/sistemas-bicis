@@ -67,6 +67,22 @@ namespace {
         archivo.close();
         return static_cast<bool>(archivo);
     }
+
+    // Tanto una devolucion como una reparacion pueden abastecer la cola de espera.
+    void asignarBicicletaEnEspera(int biciId, int viajeId, int fecha, Estacion& destino,
+                                 Lista<Viaje>& viajes, TablaHash& estaciones, RegistroBicicletas& registro) {
+        std::string aviso;
+        const std::string codigoDestino = destino.obtenerCodigo();
+        if (registro.prestar(biciId, codigoDestino, estaciones, aviso)) {
+            const long long dniEspera = destino.desencolarUsuario();
+            Viaje nuevoViaje(viajeId, biciId, dniEspera, codigoDestino, "", fecha, 0, true);
+            viajes.insertarAlFinal(nuevoViaje);
+            std::cout << "[AUTOMATICO] Bicicleta " << biciId << " asignada al DNI " << dniEspera
+                      << ". Nuevo viaje: " << viajeId << ".\n";
+        } else {
+            std::cout << "[AVISO] El usuario sigue en espera. " << aviso << '\n';
+        }
+    }
 }
 
 // Función para validar que el DNI sea lógico
@@ -198,16 +214,7 @@ void registrarDevolucion(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones, 
 
     std::cout << "\n[EXITO] Viaje " << viaje->obtenerViajeId() << " finalizado. Devolucion registrada.\n";
     if (asignarEspera) {
-        // Primero retirar la bici devuelta; solo desencolar si el prestamo fue posible.
-        if (registro.prestar(biciId, codigoDestino, tablaEstaciones, aviso)) {
-            const long long dniEspera = destino->desencolarUsuario();
-            Viaje nuevoViaje(nuevoId, biciId, dniEspera, codigoDestino, "", nuevaFecha, 0, true);
-            listaViajes.insertarAlFinal(nuevoViaje);
-            std::cout << "[AUTOMATICO] Bicicleta " << biciId << " asignada al DNI " << dniEspera
-                      << ". Nuevo viaje: " << nuevoId << ".\n";
-        } else {
-            std::cout << "[AVISO] El usuario sigue en espera. " << aviso << '\n';
-        }
+        asignarBicicletaEnEspera(biciId, nuevoId, nuevaFecha, *destino, listaViajes, tablaEstaciones, registro);
     }
     std::cout << "Bicicletas actuales en la estacion (" << codigoDestino << "): "
               << destino->obtenerBicisDisponibles() << '\n';
@@ -291,41 +298,74 @@ void listarViajesPorUsuario(const Lista<Viaje>& listaViajes) {
 }
 
 // 3. Gestionar Taller de Reparaciones con Min-Heap (Punto 5 de Parte B)
-void gestionarTallerReparaciones() {
-    MinHeapTaller taller;
+void gestionarTallerReparaciones(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones,
+                                RegistroBicicletas& registro) {
     int opcionTaller = -1;
 
     while (opcionTaller != 0) {
         std::cout << "\n=====================================\n";
         std::cout << "    TALLER DE REPARACIONES (MIN-HEAP)\n";
         std::cout << "=====================================\n";
-        std::cout << "1. Ingresar bicicleta averiada\n";
-        std::cout << "2. Atender/Extraer bicicleta mas urgente\n";
+        std::cout << "1. Reportar averia e ingresar bicicleta al taller\n";
+        std::cout << "2. Reparar y devolver a una estacion la bicicleta mas urgente\n";
         std::cout << "0. Volver al menu de viajes\n";
         if (!leerDato("Seleccione una opcion: ", opcionTaller))
             return;
 
         if (opcionTaller == 1) {
             int biciId, prioridad;
-            std::string tipo;
             if (!leerDato("Ingrese ID de la bicicleta: ", biciId) ||
-                !leerDato("Ingrese tipo (Mecanica / Electrica): ", tipo) ||
                 !leerDato("Ingrese prioridad (1: Muy urgente, 2: Urgente, 3: Normal): ", prioridad))
                 return;
 
-            taller.insertar(biciId, tipo, prioridad);
-            std::cout << "[EXITO] Bicicleta ingresada al taller correctamente.\n";
+            std::string aviso;
+            if (!registro.enviarATaller(biciId, prioridad, tablaEstaciones, aviso)) {
+                std::cout << "[ERROR] " << aviso << '\n';
+                continue;
+            }
+            const Bicicleta* bicicleta = registro.buscar(biciId);
+            const int prioridadAsignada = bicicleta->getTipo() == Bicicleta::Tipo::Electrica ? 1 : prioridad;
+            std::cout << "[EXITO] Bicicleta " << biciId << " ingresada al taller. Prioridad: "
+                      << prioridadAsignada << ".\n";
         } 
         else if (opcionTaller == 2) {
-            ElementoTaller b = taller.extraerMin();
-            if (b.biciId == -1) {
-                std::cout << "[ERROR] El taller no tiene bicicletas averiadas en espera.\n";
-            } else {
-                std::cout << "\n[ATENCION TALLER] Reparando bicicleta:\n";
-                std::cout << " - ID Bici: " << b.biciId << "\n";
-                std::cout << " - Tipo: " << b.tipo << "\n";
-                std::cout << " - Prioridad asignada: " << b.prioridad << "\n";
+            const ElementoTaller* proxima = registro.consultarProximaReparacion();
+            if (proxima == nullptr) {
+                std::cout << "[ERROR] El taller no tiene bicicletas pendientes.\n";
+                continue;
             }
+            // Copia antes de extraer: la raiz del heap cambiara al terminar la reparacion.
+            const ElementoTaller bicicleta = *proxima;
+            std::cout << "\n[ATENCION TALLER] ID: " << bicicleta.biciId << " | Tipo: " << bicicleta.tipo
+                      << " | Prioridad: " << bicicleta.prioridad << '\n';
+            std::string codigoDestino;
+            if (!leerDato("Estacion de destino despues de la reparacion: ", codigoDestino))
+                return;
+
+            Estacion* destino = tablaEstaciones.buscar(codigoDestino);
+            const bool asignarEspera = destino != nullptr && destino->tieneUsuariosEsperando();
+            const int nuevoId = asignarEspera ? siguienteIdViaje(listaViajes) : 0;
+            const int nuevaFecha = asignarEspera ? fechaActual() : 0;
+            if (asignarEspera && (nuevoId == 0 || nuevaFecha == 0)) {
+                std::cout << "[ERROR] No se pudo preparar el viaje del primer usuario en espera.\n";
+                continue;
+            }
+
+            std::string aviso;
+            if (!registro.repararProxima(codigoDestino, tablaEstaciones, aviso)) {
+                std::cout << "[ERROR] " << aviso << '\n';
+                continue;
+            }
+            std::cout << "[EXITO] Bicicleta " << bicicleta.biciId << " reparada y devuelta a "
+                      << codigoDestino << ".\n";
+            if (asignarEspera) {
+                asignarBicicletaEnEspera(bicicleta.biciId, nuevoId, nuevaFecha, *destino,
+                                       listaViajes, tablaEstaciones, registro);
+            }
+            std::cout << "Bicicletas actuales en la estacion (" << codigoDestino << "): "
+                      << destino->obtenerBicisDisponibles() << '\n';
+        } else if (opcionTaller != 0) {
+            std::cout << "Opcion invalida.\n";
         }
     }
 }
@@ -359,7 +399,7 @@ void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones, R
                 contarViajesPorEstacionYFecha(listaViajes);
                 break;
             case 5:
-                gestionarTallerReparaciones();
+                gestionarTallerReparaciones(listaViajes, tablaEstaciones, registro);
                 break;
             case 6:
                 std::cout << "Regresando al menu principal...\n";

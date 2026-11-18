@@ -6,7 +6,8 @@ Bicicleta::Bicicleta()
       tipoBicicleta(Tipo::Mecanica),
       estado(Estado::OK),
       kilometros(0),
-      enViaje(false)
+      enViaje(false),
+      enTaller(false)
 {
 }
 
@@ -16,7 +17,8 @@ Bicicleta::Bicicleta(int biciId, std::string codigoEstacion, Tipo tipoBicicleta,
       tipoBicicleta(tipoBicicleta),
       estado(estado),
       kilometros(kilometros),
-      enViaje(false)
+      enViaje(false),
+      enTaller(false)
 {
 }
 
@@ -70,4 +72,23 @@ void Bicicleta::finalizarViaje(const std::string &codigoDestino)
 bool Bicicleta::estaEnViaje() const
 {
     return enViaje;
+}
+
+bool Bicicleta::estaEnTaller() const
+{
+    return enTaller;
+}
+
+void Bicicleta::ingresarAlTaller()
+{
+    estado = Estado::Averiada;
+    enTaller = true;
+    codigoEstacion.clear();
+}
+
+void Bicicleta::finalizarReparacion(const std::string &codigoDestino)
+{
+    codigoEstacion = codigoDestino;
+    estado = Estado::OK;
+    enTaller = false;
 }

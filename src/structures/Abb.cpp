@@ -18,7 +18,8 @@ namespace
     void mostrarBicicleta(const Bicicleta &bicicleta)
     {
         cout << bicicleta.getBiciId() << " "
-             << (bicicleta.estaEnViaje() ? "EnViaje" : bicicleta.getCodigoEstacion()) << " "
+             << (bicicleta.estaEnViaje() ? "EnViaje" :
+                 bicicleta.estaEnTaller() ? "EnTaller" : bicicleta.getCodigoEstacion()) << " "
              << textoTipo(bicicleta.getTipo()) << " "
              << textoEstado(bicicleta.getEstado()) << " "
              << bicicleta.getKilometros() << "\n";
@@ -259,7 +260,8 @@ int Abb::contarAveriadasEnEstacion(Nodo *nodo, const std::string &codigo) const
         return 0;
 
     const Bicicleta &bicicleta = nodo->obtenerDato();
-    const int actual = !bicicleta.estaEnViaje() && bicicleta.getEstado() == Bicicleta::Estado::Averiada &&
+    const int actual = !bicicleta.estaEnViaje() && !bicicleta.estaEnTaller() &&
+                       bicicleta.getEstado() == Bicicleta::Estado::Averiada &&
                        bicicleta.getCodigoEstacion() == codigo ? 1 : 0;
     return actual + contarAveriadasEnEstacion(nodo->obtenerIzquierdo(), codigo)
                   + contarAveriadasEnEstacion(nodo->obtenerDerecho(), codigo);

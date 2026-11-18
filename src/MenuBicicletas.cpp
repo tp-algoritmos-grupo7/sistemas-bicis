@@ -132,7 +132,8 @@ void buscarBicicletaPorId(RegistroBicicletas &registro)
         estado = "Averiada";
 
     std::cout << "ID: " << bicicleta->getBiciId() << '\n'
-              << "Estacion: " << (bicicleta->estaEnViaje() ? "En viaje" : bicicleta->getCodigoEstacion()) << '\n'
+              << "Estacion: " << (bicicleta->estaEnViaje() ? "En viaje" :
+                                  bicicleta->estaEnTaller() ? "En taller" : bicicleta->getCodigoEstacion()) << '\n'
               << "Tipo: " << tipo << '\n'
               << "Estado: " << estado << '\n'
               << "Kilometros: " << bicicleta->getKilometros() << '\n';

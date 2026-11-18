@@ -169,6 +169,18 @@ Los registros cargados de `viajes.txt` son históricos finalizados, incluso si s
 
 La coordinación recorre la lista para buscar viajes activos o asignar IDs (`O(v)`). Buscar y actualizar una bicicleta cuesta `O(h + 1)`; comprobar anclajes requiere contar averiadas por estación (`O(b)`). `v` es la cantidad de viajes, `b` la de bicicletas y `h` la altura del ABB. El costo de las operaciones FIFO sigue siendo `O(1)`; el flujo completo de devolución incluye estas otras búsquedas.
 
+### Taller conectado al registro y a las estaciones
+
+El min-heap pertenece a `RegistroBicicletas`, cuya instancia vive en `main`. Salir del taller, volver al menú principal o entrar otra vez conserva las bicicletas pendientes durante la ejecución. Como los demás cambios de inventario, el taller vive en memoria y no se restaura al cerrar y volver a abrir el programa.
+
+El ingreso pide ID y prioridad entre 1 y 3. El tipo se consulta en el ABB y las eléctricas reciben siempre prioridad 1. Se rechazan IDs inexistentes, bicicletas en viaje, ingresos repetidos y prioridades inválidas. Si se reporta una avería de una bicicleta `OK`, se descuenta una disponible de su estación; si ya estaba averiada, no se descuenta otra vez. En el ABB queda `Averiada` y `En taller`, sin ocupar un anclaje en una estación. Si su estación ya fue eliminada, se permite ingresarla sin modificar otra estación. El heap conserva su capacidad máxima de 100: si está lleno, se rechaza el ingreso sin modificar el registro ni el stock.
+
+La opción de atención representa una reparación terminada y pide la estación de destino para la bicicleta más urgente. Primero consulta la raíz sin extraerla y valida que la estación exista y tenga lugar (incluyendo anclajes ocupados por averiadas). Si no se puede completar, conserva la bicicleta y su prioridad en el taller. Si se acepta, extrae del heap, actualiza el ABB a `OK` con la nueva estación y suma una disponible. Si hay usuarios esperando, esa misma bicicleta se presta al primero y el stock queda compensado, igual que en una devolución.
+
+Mientras una bicicleta está en el taller no puede prestarse, darse de baja ni devolverse como si viniera de un viaje. Las consultas y listados del ABB muestran `En taller`; el conteo general de averiadas la incluye hasta su reparación, pero el conteo de anclajes de las estaciones la excluye.
+
+Consultar la raíz cuesta `O(1)` e insertar/extraer del heap cuesta `O(log t)`, donde `t` es la cantidad en taller. El ingreso coordinado agrega búsquedas en el ABB (`O(h + 1)`) y en la tabla hash. La salida agrega el conteo de averiadas por estación (`O(b)`) y, si hay cola de espera, la asignación del viaje (`O(v)`). El heap evita ordenar todas las bicicletas cada vez que se atiende una reparación; la marca en el ABB permite detectar ingresos repetidos sin recorrer el heap.
+
 ---
 
 ## C. Registro de bicicletas con árbol binario de búsqueda
@@ -201,11 +213,11 @@ Las altas y bajas del menú se coordinan en `RegistroBicicletas`:
 
 - El alta valida ID positivo y único, kilómetros no negativos, estación existente y espacio antes de insertar. Una bicicleta `OK` suma una disponible; una `Averiada` se registra sin aumentar las disponibles.
 - Para comprobar el espacio en el alta se suman las disponibles de la estación y las averiadas que el ABB tiene asignadas a ella. Se considera que estas últimas siguen ocupando anclajes. El conteo de averiadas por estación recorre todo el árbol, por lo que el alta cuesta `O(n)` más la búsqueda en la tabla hash.
-- La baja se rechaza si la bicicleta está en viaje. Si está en una estación y `OK`, descuenta una disponible. Una averiada se elimina sin descontar disponibles. Si una bicicleta `OK` tiene estación existente pero stock cero, se rechaza la baja sin tocar el árbol.
+- La baja se rechaza si la bicicleta está en viaje o en el taller. Si está en una estación y `OK`, descuenta una disponible. Una averiada se elimina sin descontar disponibles. Si una bicicleta `OK` tiene estación existente pero stock cero, se rechaza la baja sin tocar el árbol.
 - Si la estación fue eliminada, se permite borrar su bicicleta del ABB sin modificar ninguna otra estación, conforme a la excepción del TP sobre reubicación.
 - Los rechazos informan el motivo y conservan ambas estructuras. En una baja con dos hijos se usa la estación y el estado de la bicicleta solicitada, no los del sucesor que copia el ABB.
 
-Esta coordinación cubre carga inicial, altas, bajas, préstamos y devoluciones. El taller todavía requiere su integración con el registro.
+Esta coordinación cubre carga inicial, altas, bajas, préstamos, devoluciones y taller.
 
 ### ➕ Inserción y búsqueda
 

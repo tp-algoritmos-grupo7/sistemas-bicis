@@ -3,6 +3,7 @@
 
 #include "Abb.h"
 #include "TablaHash.hpp"
+#include "MinHeapTaller.hpp"
 #include <ostream>
 #include <string>
 
@@ -10,6 +11,8 @@ class RegistroBicicletas
 {
 private:
     Abb bicicletas;
+    // Vive junto al registro creado en main, no dentro del menu del taller.
+    MinHeapTaller taller;
     bool tieneAnclajeLibre(const Estacion &estacion) const;
 
 public:
@@ -22,6 +25,11 @@ public:
     // Validan antes de actualizar el ABB y el stock. Una bici en viaje no se puede dar de baja.
     bool prestar(int id, const std::string &codigoOrigen, TablaHash &estaciones, std::string &aviso);
     bool devolver(int id, const std::string &codigoDestino, TablaHash &estaciones, std::string &aviso);
+    bool enviarATaller(int id, int prioridad, TablaHash &estaciones, std::string &aviso);
+    // El puntero es de lectura y puede invalidarse cuando cambia el heap.
+    const ElementoTaller *consultarProximaReparacion() const;
+    // Repara y devuelve a una estacion; no extrae del heap si el destino no tiene lugar.
+    bool repararProxima(const std::string &codigoDestino, TablaHash &estaciones, std::string &aviso);
     // Puntero de lectura prestado del ABB; no liberarlo. nullptr si no existe.
     const Bicicleta *buscar(int id) const;
     void listarPorId() const;
