@@ -81,6 +81,14 @@ sistemas-bicis/
 
 ---
 
+## Modelo de clases
+
+Vista simplificada del modelo: composición, dependencias y estructuras que usa cada módulo.
+
+![Modelo de clases del sistema de bicicletas](<docs/Sistema-Bicis-UML-UML-general-simplificado.drawio (2).png>)
+
+---
+
 ## A. Gestión de estaciones
 
 ### 📁 Archivos principales
