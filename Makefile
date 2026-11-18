@@ -1,6 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -pedantic -Iinclude
 SRC = $(wildcard src/*.cpp) $(wildcard src/structures/*.cpp)
+HEADERS = $(wildcard include/*.h) $(wildcard include/*.hpp)
 OBJ = $(SRC:.cpp=.o)
 TARGET = sistema_bicis
 
@@ -9,7 +10,7 @@ all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-src/%.o: src/%.cpp
+src/%.o: src/%.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:

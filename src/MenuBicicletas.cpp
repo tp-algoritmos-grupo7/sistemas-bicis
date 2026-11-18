@@ -26,7 +26,7 @@ bool leerEnteroValidado(const std::string &mensaje, int &valor)
     }
 }
 
-void agregarBicicletaDesdeConsola(RegistroBicicletas &registro, const TablaHash &estaciones)
+void agregarBicicletaDesdeConsola(RegistroBicicletas &registro, TablaHash &estaciones)
 {
     int id;
     do
@@ -91,10 +91,16 @@ void agregarBicicletaDesdeConsola(RegistroBicicletas &registro, const TablaHash 
         estado = Bicicleta::Estado::Averiada;
 
     Bicicleta bicicleta(id, codigoEstacion, tipo, estado, kilometros);
-    if (registro.agregar(bicicleta))
-        std::cout << "Bicicleta agregada.\n";
-    else
-        std::cout << "Ya existe una bicicleta con ese ID.\n";
+    std::string aviso;
+    if (!registro.agregar(bicicleta, estaciones, aviso))
+    {
+        std::cout << "No se agrego la bicicleta. " << aviso << '\n';
+        return;
+    }
+
+    Estacion *estacion = estaciones.buscar(codigoEstacion);
+    std::cout << "Bicicleta agregada. Bicis disponibles en " << codigoEstacion << ": "
+              << estacion->obtenerBicisDisponibles() << '\n';
 }
 
 void buscarBicicletaPorId(RegistroBicicletas &registro)
@@ -126,13 +132,14 @@ void buscarBicicletaPorId(RegistroBicicletas &registro)
         estado = "Averiada";
 
     std::cout << "ID: " << bicicleta->getBiciId() << '\n'
-              << "Estacion: " << bicicleta->getCodigoEstacion() << '\n'
+              << "Estacion: " << (bicicleta->estaEnViaje() ? "En viaje" :
+                                  bicicleta->estaEnTaller() ? "En taller" : bicicleta->getCodigoEstacion()) << '\n'
               << "Tipo: " << tipo << '\n'
               << "Estado: " << estado << '\n'
               << "Kilometros: " << bicicleta->getKilometros() << '\n';
 }
 
-void eliminarBicicletaPorId(RegistroBicicletas &registro)
+void eliminarBicicletaPorId(RegistroBicicletas &registro, TablaHash &estaciones)
 {
     int id;
     do
@@ -144,10 +151,11 @@ void eliminarBicicletaPorId(RegistroBicicletas &registro)
             std::cout << "El ID debe ser positivo.\n";
     } while (id <= 0);
 
-    if (registro.eliminar(id))
+    std::string aviso;
+    if (registro.eliminar(id, estaciones, aviso))
         std::cout << "Bicicleta eliminada.\n";
     else
-        std::cout << "No existe una bicicleta con ese ID.\n";
+        std::cout << "No se elimino la bicicleta. " << aviso << '\n';
 }
 
 void listarBicicletasParaRevision(const RegistroBicicletas &registro)
@@ -172,7 +180,7 @@ void listarBicicletasParaRevision(const RegistroBicicletas &registro)
         std::cout << "Total para revision: " << cantidad << '\n';
 }
 
-void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaciones)
+void mostrarMenuBicicletas(RegistroBicicletas &registro, TablaHash &estaciones)
 {
     int opcion = -1;
 
@@ -227,7 +235,7 @@ void mostrarMenuBicicletas(RegistroBicicletas &registro, const TablaHash &estaci
             break;
         }
         case 6:
-            eliminarBicicletaPorId(registro);
+            eliminarBicicletaPorId(registro, estaciones);
             break;
         case 7:
             listarBicicletasParaRevision(registro);

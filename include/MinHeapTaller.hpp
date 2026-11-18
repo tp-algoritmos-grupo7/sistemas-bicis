@@ -72,21 +72,30 @@ public:
         return tamanio == 0;
     }
 
-    void insertar(int biciId, const std::string& tipo, int prioridadOriginal) {
+    bool estaLleno() const {
+        return tamanio >= capacidad;
+    }
+
+    // Consultar antes de extraer permite validar el destino sin perder la bicicleta.
+    const ElementoTaller* consultarMin() const {
+        return estaVacio() ? nullptr : &datos[0];
+    }
+
+    bool insertar(int biciId, const std::string& tipo, int prioridadOriginal) {
+        if (estaLleno() || biciId <= 0 || prioridadOriginal < 1 || prioridadOriginal > 3 ||
+            (tipo != "Electrica" && tipo != "Mecanica"))
+            return false;
+
         // Regla: Las electricas entran siempre con prioridad 1
         int prioridadFinal = prioridadOriginal;
         if (tipo == "Electrica") {
             prioridadFinal = 1; 
         }
 
-        if (tamanio >= capacidad) {
-            std::cout << "El taller esta lleno.\n";
-            return;
-        }
-
         datos[tamanio] = {biciId, tipo, prioridadFinal};
         flotar(tamanio);
         tamanio++;
+        return true;
     }
 
     ElementoTaller extraerMin() {

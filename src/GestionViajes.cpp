@@ -3,7 +3,87 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <cstdlib>
+#include <ctime>
+#include <limits>
+
+namespace {
+    // Leer lineas completas permite alternar estos menus con los de estaciones y ABB.
+    template <typename T>
+    bool leerDato(const std::string& mensaje, T& valor) {
+        std::string linea;
+        while (true) {
+            std::cout << mensaje;
+            if (!std::getline(std::cin, linea))
+                return false;
+            std::istringstream entrada(linea);
+            T leido;
+            std::string sobrante;
+            if ((entrada >> leido) && !(entrada >> sobrante)) {
+                valor = leido;
+                return true;
+            }
+            std::cout << "Entrada invalida. Ingrese un solo valor.\n";
+        }
+    }
+
+    int fechaActual() {
+        const std::time_t ahora = std::time(nullptr);
+        const std::tm* fecha = std::localtime(&ahora);
+        if (fecha == nullptr)
+            return 0;
+        return (fecha->tm_year + 1900) * 10000 + (fecha->tm_mon + 1) * 100 + fecha->tm_mday;
+    }
+
+    int siguienteIdViaje(const Lista<Viaje>& viajes) {
+        int mayor = 0;
+        auto it = viajes.obtenerIterador();
+        while (it.tieneSiguiente()) {
+            const int id = it.siguiente().obtenerViajeId();
+            if (id > mayor)
+                mayor = id;
+        }
+        return mayor == std::numeric_limits<int>::max() ? 0 : mayor + 1;
+    }
+
+    Viaje* buscarViajeEnCurso(Lista<Viaje>& viajes, int biciId) {
+        auto it = viajes.obtenerIterador();
+        while (it.tieneSiguiente()) {
+            Viaje& viaje = it.siguiente();
+            if (viaje.obtenerBiciId() == biciId && viaje.estaEnCurso())
+                return &viaje;
+        }
+        return nullptr;
+    }
+
+    // El formato del TP describe viajes terminados. Los activos viven en memoria.
+    bool guardarViajeFinalizado(const Viaje& viaje) {
+        std::ofstream archivo("datos/viajes.txt", std::ios::app);
+        if (!archivo.is_open())
+            return false;
+        archivo << viaje.obtenerViajeId() << ' ' << viaje.obtenerBiciId() << ' '
+                << viaje.obtenerDniUsuario() << ' ' << viaje.obtenerEstacionOrigen() << ' '
+                << viaje.obtenerEstacionDestino() << ' ' << viaje.obtenerFecha() << ' '
+                << viaje.obtenerDuracionMin() << '\n';
+        archivo.close();
+        return static_cast<bool>(archivo);
+    }
+
+    // Tanto una devolucion como una reparacion pueden abastecer la cola de espera.
+    void asignarBicicletaEnEspera(int biciId, int viajeId, int fecha, Estacion& destino,
+                                 Lista<Viaje>& viajes, TablaHash& estaciones, RegistroBicicletas& registro) {
+        std::string aviso;
+        const std::string codigoDestino = destino.obtenerCodigo();
+        if (registro.prestar(biciId, codigoDestino, estaciones, aviso)) {
+            const long long dniEspera = destino.desencolarUsuario();
+            Viaje nuevoViaje(viajeId, biciId, dniEspera, codigoDestino, "", fecha, 0, true);
+            viajes.insertarAlFinal(nuevoViaje);
+            std::cout << "[AUTOMATICO] Bicicleta " << biciId << " asignada al DNI " << dniEspera
+                      << ". Nuevo viaje: " << viajeId << ".\n";
+        } else {
+            std::cout << "[AVISO] El usuario sigue en espera. " << aviso << '\n';
+        }
+    }
+}
 
 // Función para validar que el DNI sea lógico
 bool validarDni(long long dni) {
@@ -32,19 +112,20 @@ bool cargarViajes(const std::string& ruta, Lista<Viaje>& listaViajes) {
 }
 
 // 1. Registrar Préstamo
-void registrarViaje(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones) {
+void registrarViaje(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones, RegistroBicicletas& registro) {
     std::cout << "\n--- REGISTRAR NUEVO VIAJE (PRESTAMO) ---\n";
     
     long long dni;
-    std::cout << "Ingrese DNI del usuario: ";
-    if (!(std::cin >> dni) || !validarDni(dni)) {
+    if (!leerDato("Ingrese DNI del usuario: ", dni))
+        return;
+    if (!validarDni(dni)) {
         std::cout << "[ERROR] DNI invalido. Intente nuevamente.\n";
         return;
     }
 
-    std::string codigoOrigen, codigoDestino;
-    std::cout << "Ingrese codigo de la Estacion de Origen: ";
-    std::cin >> codigoOrigen;
+    std::string codigoOrigen;
+    if (!leerDato("Ingrese codigo de la Estacion de Origen: ", codigoOrigen))
+        return;
 
     Estacion* origen = tablaEstaciones.buscar(codigoOrigen);
     if (origen == nullptr) {
@@ -55,113 +136,88 @@ void registrarViaje(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones) {
     // Control de stock en origen
     if (origen->obtenerBicisDisponibles() <= 0) {
         std::cout << "[AVISO] La estacion no tiene bicicletas disponibles.\n";
-        std::cout << "Desea registrar al usuario en la cola de espera? (s/n): ";
-        char opcion;
-        std::cin >> opcion;
-        if (opcion == 's' || opcion == 'S') {
-            origen->encolarUsuario(dni);
-            std::cout << "[EXITO] Usuario agregado a la cola de espera de " << codigoOrigen << ".\n";
-        }
-        return;
-    }
-
-    std::cout << "Ingrese codigo de la Estacion de Destino: ";
-    std::cin >> codigoDestino;
-
-    Estacion* destino = tablaEstaciones.buscar(codigoDestino);
-    if (destino == nullptr) {
-        std::cout << "[ERROR] La estacion de destino no existe en el sistema.\n";
+        origen->encolarUsuario(dni);
+        std::cout << "[EXITO] Usuario agregado a la cola de espera de " << codigoOrigen << ".\n";
         return;
     }
 
     int biciId;
-    std::cout << "Ingrese ID de la bicicleta a retirar: ";
-    std::cin >> biciId;
-
-    
-    int stockOrigen = origen->obtenerBicisDisponibles();
-    origen->asignarBicisDisponibles(stockOrigen - 1);
-
-    int viajeId = rand() % 90000 + 10000;
-    int fecha = 20261026;
-    int duracionMin = 0;
-
-    Viaje nuevoViaje(viajeId, biciId, dni, codigoOrigen, codigoDestino, fecha, duracionMin);
-    listaViajes.insertarAlFinal(nuevoViaje);
-    
-    // Guardar en el archivo de texto usando ESPACIOS para mantener el formato original
-    std::ofstream archivo("datos/viajes.txt", std::ios::app);
-    if (archivo.is_open()) {
-        archivo << viajeId << " " 
-                << biciId << " " 
-                << dni << " " 
-                << codigoOrigen << " " 
-                << codigoDestino << " " 
-                << fecha << " " 
-                << duracionMin << "\n";
-        archivo.close();
+    if (!leerDato("Ingrese ID de la bicicleta a retirar: ", biciId))
+        return;
+    if (buscarViajeEnCurso(listaViajes, biciId) != nullptr) {
+        std::cout << "[ERROR] La bicicleta ya tiene un viaje en curso.\n";
+        return;
     }
 
-    std::cout << "\n[EXITO] ¡Viaje registrado correctamente!\n";
+    const int viajeId = siguienteIdViaje(listaViajes);
+    const int fecha = fechaActual();
+    if (viajeId == 0 || fecha == 0) {
+        std::cout << "[ERROR] No se pudo obtener un ID o una fecha para el viaje.\n";
+        return;
+    }
+
+    std::string aviso;
+    if (!registro.prestar(biciId, codigoOrigen, tablaEstaciones, aviso)) {
+        std::cout << "[ERROR] " << aviso << '\n';
+        return;
+    }
+    // El destino real y la duracion se completan al devolver la bicicleta.
+    Viaje nuevoViaje(viajeId, biciId, dni, codigoOrigen, "", fecha, 0, true);
+    listaViajes.insertarAlFinal(nuevoViaje);
+
+    std::cout << "\n[EXITO] Viaje " << viajeId << " iniciado con bicicleta " << biciId << ".\n";
     std::cout << "Bicicletas restantes en origen (" << codigoOrigen << "): " << origen->obtenerBicisDisponibles() << "\n";
 }
 
 // 2. Registrar Devolución (Con automatización de cola de espera)
-void registrarDevolucion(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones) {
+void registrarDevolucion(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones, RegistroBicicletas& registro) {
     std::cout << "\n--- REGISTRAR DEVOLUCION DE BICICLETA ---\n";
     
+    int biciId;
+    if (!leerDato("Ingrese ID de la bicicleta a devolver: ", biciId))
+        return;
+    Viaje* viaje = buscarViajeEnCurso(listaViajes, biciId);
+    if (viaje == nullptr) {
+        std::cout << "[ERROR] La bicicleta no tiene un viaje en curso para devolver.\n";
+        return;
+    }
+
     std::string codigoDestino;
-    std::cout << "Ingrese codigo de la Estacion donde se devuelve la bicicleta: ";
-    std::cin >> codigoDestino;
+    int duracionMin;
+    if (!leerDato("Ingrese codigo de la Estacion donde se devuelve la bicicleta: ", codigoDestino) ||
+        !leerDato("Ingrese duracion del viaje en minutos: ", duracionMin))
+        return;
+    if (duracionMin < 0) {
+        std::cout << "[ERROR] La duracion no puede ser negativa.\n";
+        return;
+    }
 
     Estacion* destino = tablaEstaciones.buscar(codigoDestino);
-    if (destino == nullptr) {
-        std::cout << "[ERROR] La estacion ingresada no existe.\n";
+    const Bicicleta* bicicleta = registro.buscar(biciId);
+    const bool asignarEspera = destino != nullptr && destino->tieneUsuariosEsperando() &&
+                              bicicleta != nullptr && bicicleta->getEstado() == Bicicleta::Estado::OK;
+    const int nuevoId = asignarEspera ? siguienteIdViaje(listaViajes) : 0;
+    const int nuevaFecha = asignarEspera ? fechaActual() : 0;
+    if (asignarEspera && (nuevoId == 0 || nuevaFecha == 0)) {
+        std::cout << "[ERROR] No se pudo preparar el viaje del primer usuario en espera.\n";
         return;
     }
 
-    if (destino->obtenerBicisDisponibles() >= destino->obtenerCapacidadAnclajes()) {
-        std::cout << "[ERROR] La estacion esta completa. No hay anclajes disponibles.\n";
+    std::string aviso;
+    if (!registro.devolver(biciId, codigoDestino, tablaEstaciones, aviso)) {
+        std::cout << "[ERROR] " << aviso << '\n';
         return;
     }
+    viaje->finalizar(codigoDestino, duracionMin);
+    if (!guardarViajeFinalizado(*viaje))
+        std::cout << "[AVISO] El viaje finalizo en memoria, pero no se pudo guardar en datos/viajes.txt.\n";
 
-    
-    if (destino->tieneUsuariosEsperando()) {
-        long long dniUsuarioEspera = destino->desencolarUsuario();
-        
-        int biciId = 501; 
-        int viajeId = rand() % 90000 + 10000;
-        int fecha = 20261026;
-        int duracionMin = 0;
-
-        
-        Viaje nuevoViaje(viajeId, biciId, dniUsuarioEspera, codigoDestino, codigoDestino, fecha, duracionMin);
-        listaViajes.insertarAlFinal(nuevoViaje);
-
-        
-        std::ofstream archivo("datos/viajes.txt", std::ios::app);
-        if (archivo.is_open()) {
-            archivo << viajeId << " " 
-                    << biciId << " " 
-                    << dniUsuarioEspera << " " 
-                    << codigoDestino << " " 
-                    << codigoDestino << " " 
-                    << fecha << " " 
-                    << duracionMin << "\n";
-            archivo.close();
-        }
-
-        std::cout << "\n[EXITO] Devolucion procesada.\n";
-        std::cout << "[AUTOMATICO] Habia usuarios en espera. Se le asigno la bicicleta devuelta al usuario con DNI: " << dniUsuarioEspera << ".\n";
-        std::cout << "Bicicletas actuales en la estacion (" << codigoDestino << "): " << destino->obtenerBicisDisponibles() << " (Stock compensado por asignacion inmediata).\n";
-    } else {
-        
-        int stockDestino = destino->obtenerBicisDisponibles();
-        destino->asignarBicisDisponibles(stockDestino + 1);
-
-        std::cout << "\n[EXITO] Devolucion registrada con exito.\n";
-        std::cout << "Bicicletas actuales en la estacion (" << codigoDestino << "): " << destino->obtenerBicisDisponibles() << "\n";
+    std::cout << "\n[EXITO] Viaje " << viaje->obtenerViajeId() << " finalizado. Devolucion registrada.\n";
+    if (asignarEspera) {
+        asignarBicicletaEnEspera(biciId, nuevoId, nuevaFecha, *destino, listaViajes, tablaEstaciones, registro);
     }
+    std::cout << "Bicicletas actuales en la estacion (" << codigoDestino << "): "
+              << destino->obtenerBicisDisponibles() << '\n';
 }
 
 
@@ -171,12 +227,10 @@ void contarViajesPorEstacionYFecha(const Lista<Viaje>& listaViajes) {
     std::string estacionBuscada;
     int fechaInicio, fechaFin;
 
-    std::cout << "Ingrese codigo de la estacion de origen: ";
-    std::cin >> estacionBuscada;
-    std::cout << "Ingrese fecha inicial (AAAAMMDD): ";
-    std::cin >> fechaInicio;
-    std::cout << "Ingrese fecha final (AAAAMMDD): ";
-    std::cin >> fechaFin;
+    if (!leerDato("Ingrese codigo de la estacion de origen: ", estacionBuscada) ||
+        !leerDato("Ingrese fecha inicial (AAAAMMDD): ", fechaInicio) ||
+        !leerDato("Ingrese fecha final (AAAAMMDD): ", fechaFin))
+        return;
 
     if (listaViajes.estaVacia()) {
         std::cout << "No hay viajes registrados en el sistema.\n";
@@ -202,11 +256,7 @@ void contarViajesPorEstacionYFecha(const Lista<Viaje>& listaViajes) {
 void listarViajesPorUsuario(const Lista<Viaje>& listaViajes) {
     std::cout << "\n--- CONSULTAR VIAJES POR DNI DE USUARIO ---\n";
     long long dniBuscado;
-    std::cout << "Ingrese el DNI a consultar: ";
-    if (!(std::cin >> dniBuscado)) {
-        std::cout << "[ERROR] DNI invalido.\n";
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
+    if (!leerDato("Ingrese el DNI a consultar: ", dniBuscado)) {
         return;
     }
 
@@ -223,14 +273,18 @@ void listarViajesPorUsuario(const Lista<Viaje>& listaViajes) {
         Viaje v = it.siguiente();
         if (v.obtenerDniUsuario() == dniBuscado) {
             contadorViajes++;
-            minutosTotales += v.obtenerDuracionMin();
+            if (!v.estaEnCurso())
+                minutosTotales += v.obtenerDuracionMin();
             std::cout << "\n----------------------------------------\n";
             std::cout << "Viaje #" << contadorViajes << " (ID: " << v.obtenerViajeId() << ")\n";
             std::cout << " - Bici ID: " << v.obtenerBiciId() << "\n";
             std::cout << " - Origen: " << v.obtenerEstacionOrigen() << "\n";
-            std::cout << " - Destino: " << v.obtenerEstacionDestino() << "\n";
+            std::cout << " - Destino: " << (v.estaEnCurso() ? "Pendiente" : v.obtenerEstacionDestino()) << "\n";
             std::cout << " - Fecha: " << v.obtenerFecha() << "\n";
-            std::cout << " - Duracion: " << v.obtenerDuracionMin() << " mins\n";
+            if (v.estaEnCurso())
+                std::cout << " - Estado: En curso\n";
+            else
+                std::cout << " - Duracion: " << v.obtenerDuracionMin() << " mins\n";
         }
     }
 
@@ -244,53 +298,79 @@ void listarViajesPorUsuario(const Lista<Viaje>& listaViajes) {
 }
 
 // 3. Gestionar Taller de Reparaciones con Min-Heap (Punto 5 de Parte B)
-void gestionarTallerReparaciones() {
-    MinHeapTaller taller;
+void gestionarTallerReparaciones(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones,
+                                RegistroBicicletas& registro) {
     int opcionTaller = -1;
 
     while (opcionTaller != 0) {
         std::cout << "\n=====================================\n";
         std::cout << "    TALLER DE REPARACIONES (MIN-HEAP)\n";
         std::cout << "=====================================\n";
-        std::cout << "1. Ingresar bicicleta averiada\n";
-        std::cout << "2. Atender/Extraer bicicleta mas urgente\n";
+        std::cout << "1. Reportar averia e ingresar bicicleta al taller\n";
+        std::cout << "2. Reparar y devolver a una estacion la bicicleta mas urgente\n";
         std::cout << "0. Volver al menu de viajes\n";
-        std::cout << "Seleccione una opcion: ";
-        
-        if (!(std::cin >> opcionTaller)) {
-            std::cin.clear();
-            std::cin.ignore(10000, '\n');
-            continue;
-        }
+        if (!leerDato("Seleccione una opcion: ", opcionTaller))
+            return;
 
         if (opcionTaller == 1) {
             int biciId, prioridad;
-            std::string tipo;
-            std::cout << "Ingrese ID de la bicicleta: ";
-            std::cin >> biciId;
-            std::cout << "Ingrese tipo (Mecanica / Electrica): ";
-            std::cin >> tipo;
-            std::cout << "Ingrese prioridad (1: Muy urgente, 2: Urgente, 3: Normal): ";
-            std::cin >> prioridad;
+            if (!leerDato("Ingrese ID de la bicicleta: ", biciId) ||
+                !leerDato("Ingrese prioridad (1: Muy urgente, 2: Urgente, 3: Normal): ", prioridad))
+                return;
 
-            taller.insertar(biciId, tipo, prioridad);
-            std::cout << "[EXITO] Bicicleta ingresada al taller correctamente.\n";
+            std::string aviso;
+            if (!registro.enviarATaller(biciId, prioridad, tablaEstaciones, aviso)) {
+                std::cout << "[ERROR] " << aviso << '\n';
+                continue;
+            }
+            const Bicicleta* bicicleta = registro.buscar(biciId);
+            const int prioridadAsignada = bicicleta->getTipo() == Bicicleta::Tipo::Electrica ? 1 : prioridad;
+            std::cout << "[EXITO] Bicicleta " << biciId << " ingresada al taller. Prioridad: "
+                      << prioridadAsignada << ".\n";
         } 
         else if (opcionTaller == 2) {
-            ElementoTaller b = taller.extraerMin();
-            if (b.biciId == -1) {
-                std::cout << "[ERROR] El taller no tiene bicicletas averiadas en espera.\n";
-            } else {
-                std::cout << "\n[ATENCION TALLER] Reparando bicicleta:\n";
-                std::cout << " - ID Bici: " << b.biciId << "\n";
-                std::cout << " - Tipo: " << b.tipo << "\n";
-                std::cout << " - Prioridad asignada: " << b.prioridad << "\n";
+            const ElementoTaller* proxima = registro.consultarProximaReparacion();
+            if (proxima == nullptr) {
+                std::cout << "[ERROR] El taller no tiene bicicletas pendientes.\n";
+                continue;
             }
+            // Copia antes de extraer: la raiz del heap cambiara al terminar la reparacion.
+            const ElementoTaller bicicleta = *proxima;
+            std::cout << "\n[ATENCION TALLER] ID: " << bicicleta.biciId << " | Tipo: " << bicicleta.tipo
+                      << " | Prioridad: " << bicicleta.prioridad << '\n';
+            std::string codigoDestino;
+            if (!leerDato("Estacion de destino despues de la reparacion: ", codigoDestino))
+                return;
+
+            Estacion* destino = tablaEstaciones.buscar(codigoDestino);
+            const bool asignarEspera = destino != nullptr && destino->tieneUsuariosEsperando();
+            const int nuevoId = asignarEspera ? siguienteIdViaje(listaViajes) : 0;
+            const int nuevaFecha = asignarEspera ? fechaActual() : 0;
+            if (asignarEspera && (nuevoId == 0 || nuevaFecha == 0)) {
+                std::cout << "[ERROR] No se pudo preparar el viaje del primer usuario en espera.\n";
+                continue;
+            }
+
+            std::string aviso;
+            if (!registro.repararProxima(codigoDestino, tablaEstaciones, aviso)) {
+                std::cout << "[ERROR] " << aviso << '\n';
+                continue;
+            }
+            std::cout << "[EXITO] Bicicleta " << bicicleta.biciId << " reparada y devuelta a "
+                      << codigoDestino << ".\n";
+            if (asignarEspera) {
+                asignarBicicletaEnEspera(bicicleta.biciId, nuevoId, nuevaFecha, *destino,
+                                       listaViajes, tablaEstaciones, registro);
+            }
+            std::cout << "Bicicletas actuales en la estacion (" << codigoDestino << "): "
+                      << destino->obtenerBicisDisponibles() << '\n';
+        } else if (opcionTaller != 0) {
+            std::cout << "Opcion invalida.\n";
         }
     }
 }
 // Menú general de la Parte B
-void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones) {
+void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones, RegistroBicicletas& registro) {
     int opcion = -1;
     do {
         std::cout << "\n=====================================\n";
@@ -302,20 +382,15 @@ void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones) {
         std::cout << "4. Contar viajes por estacion y fecha (Punto 1)\n";
         std::cout << "5. Gestionar Taller de Reparaciones (Min-Heap)\n";
         std::cout << "6. Volver al Menu Principal\n";
-        std::cout << "Seleccione una opcion: ";
-
-        if (!(std::cin >> opcion)) {
-            std::cin.clear();
-            std::cin.ignore(10000, '\n');
-            continue;
-        }
+        if (!leerDato("Seleccione una opcion: ", opcion))
+            return;
 
         switch (opcion) {
             case 1:
-                registrarViaje(listaViajes, tablaEstaciones);
+                registrarViaje(listaViajes, tablaEstaciones, registro);
                 break;
             case 2:
-                registrarDevolucion(listaViajes, tablaEstaciones);
+                registrarDevolucion(listaViajes, tablaEstaciones, registro);
                 break;
             case 3:
                 listarViajesPorUsuario(listaViajes);
@@ -324,7 +399,7 @@ void ejecutarMenuViajes(Lista<Viaje>& listaViajes, TablaHash& tablaEstaciones) {
                 contarViajesPorEstacionYFecha(listaViajes);
                 break;
             case 5:
-                gestionarTallerReparaciones();
+                gestionarTallerReparaciones(listaViajes, tablaEstaciones, registro);
                 break;
             case 6:
                 std::cout << "Regresando al menu principal...\n";

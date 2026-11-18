@@ -18,6 +18,7 @@ private:
     void recorridoInorden(Nodo *nodo) const;
     void liberar(Nodo *nodo);
     int contarBicicletasAveriadas(Nodo *nodo) const;
+    int contarAveriadasEnEstacion(Nodo *nodo, const std::string &codigo) const;
     int listarConMasKilometros(Nodo *nodo, int kilometros) const;
 
 public:
@@ -32,10 +33,14 @@ public:
 
     bool insertar(const Bicicleta &bicicleta);
     const Bicicleta *buscar(int biciId) const;
+    // Reemplaza los datos de una bicicleta existente sin cambiar la clave ni la forma del ABB.
+    bool actualizar(const Bicicleta &bicicleta);
     int contarNodos() const;
     int altura() const;
     void recorridoInorden() const;
     int contarBicicletasAveriadas() const;
+    // Recorre el ABB para contar anclajes ocupados por averiadas de una estacion.
+    int contarAveriadasEnEstacion(const std::string &codigo) const;
     // Muestra por ID las bicicletas con mas de "kilometros" km y devuelve cuantas son.
     int listarConMasKilometros(int kilometros) const;
     bool eliminar(int biciId);

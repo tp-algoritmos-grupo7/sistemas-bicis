@@ -13,12 +13,13 @@ private:
     std::string estacionDestino;
     int fecha; // Formato AAAAMMDD (ej. 20260310)
     int duracionMin;
+    bool enCurso;
 
 public:
     Viaje();
     Viaje(int viajeId, int biciId, long long dniUsuario, 
           const std::string& estacionOrigen, const std::string& estacionDestino, 
-          int fecha, int duracionMin);
+          int fecha, int duracionMin, bool enCurso = false);
 
     int obtenerViajeId() const;
     int obtenerBiciId() const;
@@ -27,6 +28,8 @@ public:
     std::string obtenerEstacionDestino() const;
     int obtenerFecha() const;
     int obtenerDuracionMin() const;
+    bool estaEnCurso() const;
+    void finalizar(const std::string& destino, int minutos);
 
     void mostrar() const;
 };

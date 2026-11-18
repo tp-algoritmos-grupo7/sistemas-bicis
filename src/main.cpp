@@ -22,7 +22,7 @@ int main()
         std::cerr << "Advertencia: no se pudo cargar el archivo de viajes.\n";
     }
 
-    // Cargar bicicletas de dev
+    // Cargar el registro sin sumar nuevamente el stock leido de estaciones.txt.
     if (!registroBicicletas.cargarDesdeArchivo("datos/bicicletas.txt", std::cerr))
     {
         std::cerr << "Advertencia: carga de bicicletas con incidencias. Las bicicletas ya incorporadas se conservan.\n";
@@ -57,8 +57,7 @@ int main()
             ejecutarMenuEstaciones(tablaEstaciones, grafoCiclovias);
             break;
         case 2:
-            // ¡Acá está tu módulo de viajes integrado con dev!
-            ejecutarMenuViajes(listaViajes, tablaEstaciones);
+            ejecutarMenuViajes(listaViajes, tablaEstaciones, registroBicicletas);
             break;
         case 3:
             mostrarMenuBicicletas(registroBicicletas, tablaEstaciones);
