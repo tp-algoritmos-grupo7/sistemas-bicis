@@ -33,6 +33,8 @@ public:
 
     bool insertar(const Bicicleta &bicicleta);
     const Bicicleta *buscar(int biciId) const;
+    // Reemplaza los datos de una bicicleta existente sin cambiar la clave ni la forma del ABB.
+    bool actualizar(const Bicicleta &bicicleta);
     int contarNodos() const;
     int altura() const;
     void recorridoInorden() const;

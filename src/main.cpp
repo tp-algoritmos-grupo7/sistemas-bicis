@@ -57,8 +57,7 @@ int main()
             ejecutarMenuEstaciones(tablaEstaciones, grafoCiclovias);
             break;
         case 2:
-            // ¡Acá está tu módulo de viajes integrado con dev!
-            ejecutarMenuViajes(listaViajes, tablaEstaciones);
+            ejecutarMenuViajes(listaViajes, tablaEstaciones, registroBicicletas);
             break;
         case 3:
             mostrarMenuBicicletas(registroBicicletas, tablaEstaciones);

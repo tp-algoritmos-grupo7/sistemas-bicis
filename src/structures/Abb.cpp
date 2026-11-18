@@ -18,7 +18,7 @@ namespace
     void mostrarBicicleta(const Bicicleta &bicicleta)
     {
         cout << bicicleta.getBiciId() << " "
-             << bicicleta.getCodigoEstacion() << " "
+             << (bicicleta.estaEnViaje() ? "EnViaje" : bicicleta.getCodigoEstacion()) << " "
              << textoTipo(bicicleta.getTipo()) << " "
              << textoEstado(bicicleta.getEstado()) << " "
              << bicicleta.getKilometros() << "\n";
@@ -113,6 +113,23 @@ const Bicicleta *Abb::buscar(int biciId) const
     }
 
     return nullptr;
+}
+
+bool Abb::actualizar(const Bicicleta &bicicleta)
+{
+    Nodo *actual = raiz;
+    while (actual != nullptr)
+    {
+        const int idActual = actual->obtenerDato().getBiciId();
+        if (bicicleta.getBiciId() == idActual)
+        {
+            actual->cambiarDato(bicicleta);
+            return true;
+        }
+        actual = bicicleta.getBiciId() < idActual
+                     ? actual->obtenerIzquierdo() : actual->obtenerDerecho();
+    }
+    return false;
 }
 
 Nodo *Abb::buscarPadre(int biciId) const
@@ -242,7 +259,7 @@ int Abb::contarAveriadasEnEstacion(Nodo *nodo, const std::string &codigo) const
         return 0;
 
     const Bicicleta &bicicleta = nodo->obtenerDato();
-    const int actual = bicicleta.getEstado() == Bicicleta::Estado::Averiada &&
+    const int actual = !bicicleta.estaEnViaje() && bicicleta.getEstado() == Bicicleta::Estado::Averiada &&
                        bicicleta.getCodigoEstacion() == codigo ? 1 : 0;
     return actual + contarAveriadasEnEstacion(nodo->obtenerIzquierdo(), codigo)
                   + contarAveriadasEnEstacion(nodo->obtenerDerecho(), codigo);

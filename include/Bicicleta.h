@@ -22,6 +22,7 @@ private:
     Tipo tipoBicicleta;
     Estado estado;
     int kilometros;
+    bool enViaje;
 
 public:
     Bicicleta();
@@ -32,12 +33,13 @@ public:
     Tipo getTipo() const;
     Estado getEstado() const;
     int getKilometros() const;
+    bool estaEnViaje() const;
 
     void setEstado(Estado estado);
     void setCodigoEstacion(std::string codigoEstacion);
 
     void comenzarViaje();
-    void finalizarViaje();
+    void finalizarViaje(const std::string &codigoDestino);
 };
 
 #endif // BICICLETA_H

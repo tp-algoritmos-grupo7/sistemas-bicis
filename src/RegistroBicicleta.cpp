@@ -2,6 +2,14 @@
 #include <fstream>
 #include <iostream>
 
+bool RegistroBicicletas::tieneAnclajeLibre(const Estacion &estacion) const
+{
+    const int disponibles = estacion.obtenerBicisDisponibles();
+    return disponibles < estacion.obtenerCapacidadAnclajes() &&
+           bicicletas.contarAveriadasEnEstacion(estacion.obtenerCodigo()) <
+               estacion.obtenerCapacidadAnclajes() - disponibles;
+}
+
 bool RegistroBicicletas::agregar(const Bicicleta &bicicleta, TablaHash &estaciones, std::string &aviso)
 {
     aviso.clear();
@@ -17,6 +25,12 @@ bool RegistroBicicletas::agregar(const Bicicleta &bicicleta, TablaHash &estacion
         return false;
     }
 
+    if (bicicleta.estaEnViaje())
+    {
+        aviso = "No se puede dar de alta una bicicleta que esta en viaje.";
+        return false;
+    }
+
     const std::string codigo = bicicleta.getCodigoEstacion();
     Estacion *estacion = estaciones.buscar(codigo);
     if (estacion == nullptr)
@@ -27,9 +41,7 @@ bool RegistroBicicletas::agregar(const Bicicleta &bicicleta, TablaHash &estacion
 
     // Las averiadas ocupan anclajes, pero no forman parte del stock disponible.
     const int disponibles = estacion->obtenerBicisDisponibles();
-    const int averiadas = bicicletas.contarAveriadasEnEstacion(codigo);
-    if (disponibles >= estacion->obtenerCapacidadAnclajes() ||
-        averiadas >= estacion->obtenerCapacidadAnclajes() - disponibles)
+    if (!tieneAnclajeLibre(*estacion))
     {
         aviso = "La estacion '" + codigo + "' no tiene anclajes libres.";
         return false;
@@ -56,6 +68,12 @@ bool RegistroBicicletas::eliminar(int id, TablaHash &estaciones, std::string &av
         return false;
     }
 
+    if (bicicleta->estaEnViaje())
+    {
+        aviso = "No se puede eliminar una bicicleta que esta en viaje.";
+        return false;
+    }
+
     Estacion *estacion = estaciones.buscar(bicicleta->getCodigoEstacion());
     const bool descontarStock = estacion != nullptr && bicicleta->getEstado() == Bicicleta::Estado::OK;
     if (descontarStock && estacion->obtenerBicisDisponibles() <= 0)
@@ -75,6 +93,81 @@ bool RegistroBicicletas::eliminar(int id, TablaHash &estaciones, std::string &av
         estacion->asignarBicisDisponibles(estacion->obtenerBicisDisponibles() - 1);
     // El TP permite eliminar estaciones sin reubicar sus bicicletas.
     // Si ya no existe la estacion, la baja solo afecta al registro.
+    return true;
+}
+
+bool RegistroBicicletas::prestar(int id, const std::string &codigoOrigen,
+                               TablaHash &estaciones, std::string &aviso)
+{
+    aviso.clear();
+    const Bicicleta *bicicleta = bicicletas.buscar(id);
+    if (bicicleta == nullptr)
+        aviso = "No existe una bicicleta con ese ID.";
+    else if (bicicleta->estaEnViaje())
+        aviso = "La bicicleta ya esta en viaje.";
+    else if (bicicleta->getEstado() != Bicicleta::Estado::OK)
+        aviso = "La bicicleta esta averiada y no se puede prestar.";
+    else if (bicicleta->getCodigoEstacion() != codigoOrigen)
+        aviso = "La bicicleta no se encuentra en la estacion de origen.";
+    if (!aviso.empty())
+        return false;
+
+    Estacion *origen = estaciones.buscar(codigoOrigen);
+    if (origen == nullptr)
+    {
+        aviso = "La estacion de origen no existe.";
+        return false;
+    }
+    if (origen->obtenerBicisDisponibles() <= 0)
+    {
+        aviso = "La estacion no tiene bicicletas disponibles.";
+        return false;
+    }
+
+    Bicicleta actualizada = *bicicleta;
+    actualizada.comenzarViaje();
+    if (!bicicletas.actualizar(actualizada))
+    {
+        aviso = "No se pudo actualizar la bicicleta.";
+        return false;
+    }
+    origen->asignarBicisDisponibles(origen->obtenerBicisDisponibles() - 1);
+    return true;
+}
+
+bool RegistroBicicletas::devolver(int id, const std::string &codigoDestino,
+                                TablaHash &estaciones, std::string &aviso)
+{
+    aviso.clear();
+    const Bicicleta *bicicleta = bicicletas.buscar(id);
+    if (bicicleta == nullptr)
+        aviso = "No existe una bicicleta con ese ID.";
+    else if (!bicicleta->estaEnViaje())
+        aviso = "La bicicleta no esta en viaje: no se puede devolver otra vez.";
+    if (!aviso.empty())
+        return false;
+
+    Estacion *destino = estaciones.buscar(codigoDestino);
+    if (destino == nullptr)
+    {
+        aviso = "La estacion de destino no existe.";
+        return false;
+    }
+    if (!tieneAnclajeLibre(*destino))
+    {
+        aviso = "La estacion de destino no tiene anclajes libres.";
+        return false;
+    }
+
+    Bicicleta actualizada = *bicicleta;
+    actualizada.finalizarViaje(codigoDestino);
+    if (!bicicletas.actualizar(actualizada))
+    {
+        aviso = "No se pudo actualizar la bicicleta.";
+        return false;
+    }
+    if (actualizada.getEstado() == Bicicleta::Estado::OK)
+        destino->asignarBicisDisponibles(destino->obtenerBicisDisponibles() + 1);
     return true;
 }
 

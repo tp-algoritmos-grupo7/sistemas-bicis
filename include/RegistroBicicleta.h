@@ -10,6 +10,7 @@ class RegistroBicicletas
 {
 private:
     Abb bicicletas;
+    bool tieneAnclajeLibre(const Estacion &estacion) const;
 
 public:
     // Alta nueva: exige ID unico, estacion existente y anclaje libre.
@@ -18,6 +19,9 @@ public:
     // Baja: descuenta stock solo si esta OK y su estacion todavia existe.
     // Rechaza un stock insuficiente sin borrar del ABB. Las averiadas no descuentan disponibles.
     bool eliminar(int id, TablaHash &estaciones, std::string &aviso);
+    // Validan antes de actualizar el ABB y el stock. Una bici en viaje no se puede dar de baja.
+    bool prestar(int id, const std::string &codigoOrigen, TablaHash &estaciones, std::string &aviso);
+    bool devolver(int id, const std::string &codigoDestino, TablaHash &estaciones, std::string &aviso);
     // Puntero de lectura prestado del ABB; no liberarlo. nullptr si no existe.
     const Bicicleta *buscar(int id) const;
     void listarPorId() const;

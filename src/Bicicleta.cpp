@@ -5,7 +5,8 @@ Bicicleta::Bicicleta()
       codigoEstacion(""),
       tipoBicicleta(Tipo::Mecanica),
       estado(Estado::OK),
-      kilometros(0)
+      kilometros(0),
+      enViaje(false)
 {
 }
 
@@ -14,7 +15,8 @@ Bicicleta::Bicicleta(int biciId, std::string codigoEstacion, Tipo tipoBicicleta,
       codigoEstacion(codigoEstacion),
       tipoBicicleta(tipoBicicleta),
       estado(estado),
-      kilometros(kilometros)
+      kilometros(kilometros),
+      enViaje(false)
 {
 }
 
@@ -55,8 +57,17 @@ void Bicicleta::setCodigoEstacion(std::string codigoEstacion)
 
 void Bicicleta::comenzarViaje()
 {
+    enViaje = true;
+    codigoEstacion.clear();
 }
 
-void Bicicleta::finalizarViaje()
+void Bicicleta::finalizarViaje(const std::string &codigoDestino)
 {
+    codigoEstacion = codigoDestino;
+    enViaje = false;
+}
+
+bool Bicicleta::estaEnViaje() const
+{
+    return enViaje;
 }
