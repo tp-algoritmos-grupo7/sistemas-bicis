@@ -231,6 +231,23 @@ int Abb::contarBicicletasAveriadas(Nodo *nodo) const
            + contarBicicletasAveriadas(nodo->obtenerDerecho());
 }
 
+int Abb::contarAveriadasEnEstacion(const std::string &codigo) const
+{
+    return contarAveriadasEnEstacion(raiz, codigo);
+}
+
+int Abb::contarAveriadasEnEstacion(Nodo *nodo, const std::string &codigo) const
+{
+    if (nodo == nullptr)
+        return 0;
+
+    const Bicicleta &bicicleta = nodo->obtenerDato();
+    const int actual = bicicleta.getEstado() == Bicicleta::Estado::Averiada &&
+                       bicicleta.getCodigoEstacion() == codigo ? 1 : 0;
+    return actual + contarAveriadasEnEstacion(nodo->obtenerIzquierdo(), codigo)
+                  + contarAveriadasEnEstacion(nodo->obtenerDerecho(), codigo);
+}
+
 bool Abb::eliminar(int biciId)
 {
     Nodo* padre = buscarPadre(biciId);

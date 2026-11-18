@@ -183,6 +183,18 @@ Todas las bicicletas se guardan en un árbol binario de búsqueda ordenado por `
 
 Al iniciar el programa, `RegistroBicicletas::cargarDesdeArchivo` lee `datos/bicicletas.txt` e inserta cada bicicleta en el ABB. La carga ocurre una sola vez, antes del menú principal. Los IDs duplicados se omiten y se informa el problema; las bicicletas ya cargadas se conservan.
 
+La carga inicial no modifica `bicisDisponibles`: ese stock ya se leyó de `estaciones.txt`. Los archivos de ejemplo no constituyen un inventario completo por ID, por lo que no se recalcula el stock contando los nodos del ABB.
+
+Las altas y bajas del menú se coordinan en `RegistroBicicletas`:
+
+- El alta valida ID positivo y único, kilómetros no negativos, estación existente y espacio antes de insertar. Una bicicleta `OK` suma una disponible; una `Averiada` se registra sin aumentar las disponibles.
+- Para comprobar el espacio en el alta se suman las disponibles de la estación y las averiadas que el ABB tiene asignadas a ella. Se considera que estas últimas siguen ocupando anclajes. El conteo de averiadas por estación recorre todo el árbol, por lo que el alta cuesta `O(n)` más la búsqueda en la tabla hash.
+- La baja descuenta una disponible si la bicicleta está `OK`. Una averiada se elimina sin descontar disponibles. Si una bicicleta `OK` tiene estación existente pero stock cero, se rechaza la baja sin tocar el árbol.
+- Si la estación fue eliminada, se permite borrar su bicicleta del ABB sin modificar ninguna otra estación, conforme a la excepción del TP sobre reubicación.
+- Los rechazos informan el motivo y conservan ambas estructuras. En una baja con dos hijos se usa la estación y el estado de la bicicleta solicitada, no los del sucesor que copia el ABB.
+
+Esta coordinación cubre carga inicial, altas y bajas. Préstamos, devoluciones y taller todavía requieren su integración con el registro para mantener la consistencia durante todo el uso del sistema.
+
 ### ➕ Inserción y búsqueda
 
 Ambos métodos son iterativos: usan un puntero `actual` que comienza en la raíz y un ciclo `while` para avanzar por el árbol.

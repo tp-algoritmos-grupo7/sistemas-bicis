@@ -2,14 +2,80 @@
 #include <fstream>
 #include <iostream>
 
-bool RegistroBicicletas::agregar(const Bicicleta &bicicleta)
+bool RegistroBicicletas::agregar(const Bicicleta &bicicleta, TablaHash &estaciones, std::string &aviso)
 {
-    return bicicletas.insertar(bicicleta);
+    aviso.clear();
+    if (bicicleta.getBiciId() <= 0 || bicicleta.getKilometros() < 0)
+    {
+        aviso = "El ID debe ser positivo y los kilometros no pueden ser negativos.";
+        return false;
+    }
+
+    if (bicicletas.buscar(bicicleta.getBiciId()) != nullptr)
+    {
+        aviso = "Ya existe una bicicleta con ese ID.";
+        return false;
+    }
+
+    const std::string codigo = bicicleta.getCodigoEstacion();
+    Estacion *estacion = estaciones.buscar(codigo);
+    if (estacion == nullptr)
+    {
+        aviso = "No existe la estacion '" + codigo + "'.";
+        return false;
+    }
+
+    // Las averiadas ocupan anclajes, pero no forman parte del stock disponible.
+    const int disponibles = estacion->obtenerBicisDisponibles();
+    const int averiadas = bicicletas.contarAveriadasEnEstacion(codigo);
+    if (disponibles >= estacion->obtenerCapacidadAnclajes() ||
+        averiadas >= estacion->obtenerCapacidadAnclajes() - disponibles)
+    {
+        aviso = "La estacion '" + codigo + "' no tiene anclajes libres.";
+        return false;
+    }
+
+    // Solo modificamos las estructuras una vez que todas las validaciones pasaron.
+    if (!bicicletas.insertar(bicicleta))
+    {
+        aviso = "Ya existe una bicicleta con ese ID.";
+        return false;
+    }
+    if (bicicleta.getEstado() == Bicicleta::Estado::OK)
+        estacion->asignarBicisDisponibles(disponibles + 1);
+    return true;
 }
 
-bool RegistroBicicletas::eliminar(int id)
+bool RegistroBicicletas::eliminar(int id, TablaHash &estaciones, std::string &aviso)
 {
-    return bicicletas.eliminar(id);
+    aviso.clear();
+    const Bicicleta *bicicleta = bicicletas.buscar(id);
+    if (bicicleta == nullptr)
+    {
+        aviso = "No existe una bicicleta con ese ID.";
+        return false;
+    }
+
+    Estacion *estacion = estaciones.buscar(bicicleta->getCodigoEstacion());
+    const bool descontarStock = estacion != nullptr && bicicleta->getEstado() == Bicicleta::Estado::OK;
+    if (descontarStock && estacion->obtenerBicisDisponibles() <= 0)
+    {
+        aviso = "El stock de la estacion es inconsistente: no hay bicicletas disponibles para descontar.";
+        return false;
+    }
+
+    // Guardamos los datos necesarios antes de borrar: el ABB puede copiar el sucesor
+    // sobre el nodo eliminado cuando este tiene dos hijos.
+    if (!bicicletas.eliminar(id))
+    {
+        aviso = "No se pudo eliminar la bicicleta.";
+        return false;
+    }
+    if (descontarStock)
+        estacion->asignarBicisDisponibles(estacion->obtenerBicisDisponibles() - 1);
+    // El TP permite eliminar estaciones sin reubicar sus bicicletas.
+    // Si ya no existe la estacion, la baja solo afecta al registro.
+    return true;
 }
 
 const Bicicleta *RegistroBicicletas::buscar(int id) const
@@ -71,7 +137,8 @@ bool RegistroBicicletas::cargarDesdeArchivo(const std::string &ruta, std::ostrea
                                       : Bicicleta::Estado::Averiada;
 
         Bicicleta bicicleta(id, codigoEstacion, tipo, estado, kilometros);
-        if (!agregar(bicicleta))
+        // El stock inicial ya viene de estaciones.txt; cargar no es dar de alta.
+        if (!bicicletas.insertar(bicicleta))
         {
             diagnosticos << "ID duplicado omitido: " << id << '\n';
             cargaCompleta = false;
