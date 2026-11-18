@@ -17,10 +17,21 @@ private:
     size_t capacidad;
     size_t tamanio;
 
+    bool esMenor(const ElementoTaller& a, const ElementoTaller& b) const {
+        if (a.prioridad != b.prioridad) {
+            return a.prioridad < b.prioridad; // Menor número de prioridad = más urgente
+        }
+        // Desempate por tipo ante igual prioridad: Las eléctricas tienen prioridad sobre las mecánicas
+        if (a.tipo == "Electrica" && b.tipo == "Mecanica") {
+            return true;
+        }
+        return false;
+    }
+
     void flotar(size_t i) {
         while (i > 0) {
             size_t padre = (i - 1) / 2;
-            if (datos[i].prioridad < datos[padre].prioridad) {
+            if (esMenor(datos[i], datos[padre])) { // <-- USAMOS LA NUEVA CONDICIÓN
                 // Intercambiar
                 ElementoTaller temp = datos[i];
                 datos[i] = datos[padre];
@@ -38,10 +49,10 @@ private:
             size_t der = 2 * i + 2;
             size_t menor = i;
 
-            if (izq < tamanio && datos[izq].prioridad < datos[menor].prioridad) {
+            if (izq < tamanio && esMenor(datos[izq], datos[menor])) { // <-- USAMOS LA NUEVA CONDICIÓN
                 menor = izq;
             }
-            if (der < tamanio && datos[der].prioridad < datos[menor].prioridad) {
+            if (der < tamanio && esMenor(datos[der], datos[menor])) { // <-- USAMOS LA NUEVA CONDICIÓN
                 menor = der;
             }
 
